@@ -2,11 +2,12 @@ package node
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
-
-	"github.com/hoffa2/chord/util"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/hoffa2/chord/util"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 type Node struct {
 	// Storing key-value pairs on the respective node
 	objectStore map[string]string
+	nameServer  string
+	conn        http.Client
 }
 
 func readKey(r *http.Request) string {
@@ -55,4 +58,24 @@ func (n *Node) GetKey(w http.ResponseWriter, r *http.Request) {
 // handles everything
 func sendKey(w http.ResponseWriter, key string) {
 	w.Write([]byte(key))
+}
+
+func (n *Node) RegisterWithNameServer() {
+	hostname, err := os.Hostname()
+	if err != nil {
+		panic(err)
+	}
+
+	req, err := http.NewRequest("PUT", n.nameServer, []byte(hostname))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp, err := n.conn.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Could not register with nameserver: %s", n.nameServer)
+	}
 }

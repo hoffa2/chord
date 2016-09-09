@@ -14,10 +14,11 @@ func Run(args []string) error {
 	}
 
 	port := os.Args[0]
+	NameServerAddr := os.Args[1]
 
 	r := mux.NewRouter()
 
-	node := &Node{}
+	node := &Node{nameServer: NameServerAddr}
 
 	// Registering the put and get methods
 	r.HandleFunc("/{key}", node.GetKey).Methods("GET")
