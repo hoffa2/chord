@@ -1,4 +1,4 @@
-package main
+package node
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func main() {
+func Run(args []string) error {
 	if len(os.Args) < 2 {
 		panic(fmt.Sprintf("Usage: %s port\n", os.Args[0]))
 	}
@@ -23,5 +23,5 @@ func main() {
 	r.HandleFunc("/{key}", node.GetKey).Methods("GET")
 	r.HandleFunc("/{key}", node.PutKey).Methods("PUT")
 
-	http.ListenAndServe(":"+port, r)
+	return http.ListenAndServe(":"+port, r)
 }

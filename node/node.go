@@ -1,9 +1,10 @@
-package main
+package node
 
 import (
-	"chord/util"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/hoffa2/chord/util"
 
 	"github.com/gorilla/mux"
 )
@@ -43,7 +44,7 @@ func (n *Node) GetKey(w http.ResponseWriter, r *http.Request) {
 
 	val, ok := n.objectStore[key]
 	if !ok {
-		util.errorNotFound(w, NotFound, key)
+		util.ErrorNotFound(w, NotFound, key)
 	}
 
 	sendKey(w, val)
