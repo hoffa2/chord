@@ -26,7 +26,7 @@ func (c *Client) getIPAddrs() {
 		log.Fatal("could not retrieve ipadresses from nameserver: %s", c.nameServer)
 	}
 
-	err := json.NewDecoder(resb.Body).Decode(c.IPs)
+	err = json.NewDecoder(resp.Body).Decode(c.IPs)
 	if err != nil {
 		log.Fatal(err)
 	}

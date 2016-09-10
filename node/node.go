@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/util"
@@ -66,7 +67,7 @@ func (n *Node) RegisterWithNameServer() {
 		panic(err)
 	}
 
-	req, err := http.NewRequest("PUT", n.nameServer, []byte(hostname))
+	req, err := http.NewRequest("PUT", n.nameServer, strings.NewReader(hostname))
 	if err != nil {
 		log.Fatal(err)
 	}

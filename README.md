@@ -10,7 +10,6 @@ To get started
 
 Convenience
 -----
-* To donwload all dependencies - just type go get . in the folder containing your source code
-
-
+* To donwload all dependencies - just type **go get ./..** in the folder containing your source code
+* To run either of the components: Type **go run main.go name-of-component arguments**
 
