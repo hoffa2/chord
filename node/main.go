@@ -3,18 +3,17 @@ package node
 import (
 	"fmt"
 	"net/http"
-	"os"
-
 	"github.com/gorilla/mux"
+	"github.com/urfave/cli"
 )
 
-func Run(args []string) error {
-	if len(os.Args) < 2 {
-		panic(fmt.Sprintf("Usage: %s port\n", os.Args[0]))
+func Run(c *cli.Context) error {
+	if c.NArg() < 2 {
+		panic(fmt.Sprintf("Usage: node port nameserver\n"))
 	}
 
-	port := os.Args[0]
-	NameServerAddr := os.Args[1]
+	port := c.String("port")
+	NameServerAddr := c.String("namserver")
 
 	r := mux.NewRouter()
 

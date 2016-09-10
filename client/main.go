@@ -1,5 +1,7 @@
 package client
 
-func Run(args []string) error {
+import "github.com/urfave/cli"
+
+func Run(c *cli.Context) error {
 	return nil
 }

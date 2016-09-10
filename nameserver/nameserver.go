@@ -2,8 +2,8 @@ package nameserver
 
 import (
 	"net/http"
-
 	"github.com/gorilla/mux"
+	"github.com/urfave/cli"
 	"github.com/hoffa2/chord/util"
 )
 
@@ -16,9 +16,12 @@ type NameServer struct {
 	IpAdresses []string
 }
 
-func Run(args []string) error {
+func Run(c *cli.Context) error {
+	if (c.NArg() < 1) {
+		panic("specify port")
+	}
 
-	port := args[0]
+	port := c.String("port")
 
 	ns := &NameServer{}
 
