@@ -18,16 +18,17 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 }
 
 // ConnectRPC Instantiates a RPC connections
-func ConnectRPC(host string) (*rpc.Client, error) {
-	client, err := rpc.DialHTTP("tcp", host)
+func ConnectRPC(host string) (*NodeComm, error) {
+	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
+	nCom := &NodeComm{client: rpc.NewClient(conn)}
+	return nCom, nil
 }
 
 // SetupRPCServer Instantiates a RPC Server
-func SetupRPCServer(port string, api comm.NodeComm) {
+func SetupRPCServer(port string, api comm.NodeComm) error {
 	s := rpc.NewServer()
 
 	registerCommAPI(s, api)
@@ -37,10 +38,11 @@ func SetupRPCServer(port string, api comm.NodeComm) {
 	// all traffic; Not just localhost
 	l, err := net.Listen("tcp", "*:"+port)
 	if err != nil {
-		log.Fatalf("Could not start listening on port %s. Error: %s", port, err)
+		return err
 	}
 
 	go http.Serve(l, nil)
+	return nil
 }
 
 func (n *NodeComm) FindSuccessor(id string) string {

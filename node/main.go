@@ -2,6 +2,7 @@ package node
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/netutils"
@@ -18,7 +19,17 @@ func Run(c *cli.Context) error {
 
 	r := mux.NewRouter()
 
-	node := &Node{nameServer: NameServerAddr}
+	n, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	id := createNodeID(n)
+
+	node := &Node{
+		nameServer: NameServerAddr,
+		ID:         id,
+	}
 
 	netutils.SetupRPCServer("8001", node)
 

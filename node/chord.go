@@ -10,11 +10,3 @@ type FingerEntry struct {
 	ipAdress string
 	node     *netutils.NodeComm
 }
-
-// Fingertable Table holding information
-// about neighboring node
-type FingerTable struct {
-	// Numentries in table
-	entries int
-	finger  []FingerEntry
-}

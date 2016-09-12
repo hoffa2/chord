@@ -1,6 +1,8 @@
 package node
 
 import (
+	"crypto/sha1"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/comm"
+	"github.com/hoffa2/chord/netutils"
 	"github.com/hoffa2/chord/util"
 )
 
@@ -22,9 +25,16 @@ const (
 type Node struct {
 	// Storing key-value pairs on the respective node
 	objectStore map[string]string
+	ID          string
 	nameServer  string
 	conn        http.Client
-	finger      []FingerTable
+	finger      []FingerEntry
+}
+
+func createNodeID(hostname string) string {
+	h := sha1.New()
+	io.WriteString(h, hostname)
+	return string(h.Sum(nil))
 }
 
 func readKey(r *http.Request) string {
@@ -32,7 +42,7 @@ func readKey(r *http.Request) string {
 	return vars["key"]
 }
 
-func (n *Node) gutKey(w http.ResponseWriter, r *http.Request) {
+func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, NoValue, http.StatusBadRequest)
@@ -63,7 +73,7 @@ func sendKey(w http.ResponseWriter, key string) {
 	w.Write([]byte(key))
 }
 
-func (n *Node) RegisterWithNameServer() {
+func (n *Node) registerWithNameServer() {
 	hostname, err := os.Hostname()
 	if err != nil {
 		panic(err)
@@ -83,14 +93,26 @@ func (n *Node) RegisterWithNameServer() {
 	}
 }
 
-func (n *Node) setupNodeRPC() {
+func (n *Node) setupNodeRPC(nodeIP string) error {
+	c, err := netutils.ConnectRPC(nodeIP)
+	if err != nil {
+		return err
+	}
 
+	n.finger[0].node = c
+
+	return nil
 }
 
+// Findsuccessor Finding the successor of n
 func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	return nil
 }
 
 func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	return nil
+}
+
+func (n *Node) initFingerTable() {
+
 }
