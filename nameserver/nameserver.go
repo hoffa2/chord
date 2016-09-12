@@ -17,11 +17,10 @@ type NameServer struct {
 }
 
 func Run(c *cli.Context) error {
-	if (c.NArg() < 1) {
-		panic("specify port")
-	}
-
 	port := c.String("port")
+	if port == "" {
+		port = "8000"
+	}
 
 	ns := &NameServer{}
 

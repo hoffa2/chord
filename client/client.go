@@ -7,12 +7,15 @@ import (
 )
 
 type Client struct {
+	// IP addresses to chord nodes
 	IPs        []string
+	// Ip address of nameserver
 	nameServer string
+	// Connection object - used for all http interaction
 	conn       http.Client
 }
 
-func (c *Client) getIPAddrs() {
+func (c *Client) getNodeIPs() {
 	req, err := http.NewRequest("GET", c.nameServer, nil)
 	if err != nil {
 		log.Fatal(err)
