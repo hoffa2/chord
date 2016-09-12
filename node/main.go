@@ -2,7 +2,9 @@ package node
 
 import (
 	"net/http"
+
 	"github.com/gorilla/mux"
+	"github.com/hoffa2/chord/netutils"
 	"github.com/urfave/cli"
 )
 
@@ -18,9 +20,11 @@ func Run(c *cli.Context) error {
 
 	node := &Node{nameServer: NameServerAddr}
 
-	// Registering the put and get methods
-	r.HandleFunc("/{key}", node.GetKey).Methods("GET")
-	r.HandleFunc("/{key}", node.PutKey).Methods("PUT")
+	netutils.SetupRPCServer("8001", node)
 
-	return http.ListenAndServe(":"+port, r)
+	// Registering the put and get methods
+	r.HandleFunc("/{key}", node.getKey).Methods("GET")
+	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
+
+	return http.ListenAndServe("*:"+port, r)
 }

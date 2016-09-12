@@ -1,12 +1,13 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
-	"errors"
-	"github.com/hoffa2/chord/nameserver"
+
 	"github.com/hoffa2/chord/client"
 	"github.com/hoffa2/chord/launch"
+	"github.com/hoffa2/chord/nameserver"
 	"github.com/hoffa2/chord/node"
 	"github.com/urfave/cli"
 )
@@ -20,21 +21,6 @@ func main() {
 	app.Name = "Key-Value Store"
 	app.Usage = "Run one of the components"
 
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name: "nameserver, ns",
-			Usage: "Specify ip of nameserver",
-		},
-		cli.StringFlag{
-			Name: "nodes",
-			Usage: "Specify a list of node seperated by space",
-		},
-		cli.StringFlag{
-			Name: "run-tests",
-			Usage: "run all tests",
-		},
-	}
-
 	app.Commands = []cli.Command{
 		{
 			Name:  "node",
@@ -47,11 +33,11 @@ func main() {
 			},
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name: "port, p",
+					Name:  "port, p",
 					Usage: "Specify port",
 				},
 				cli.StringFlag{
-					Name: "nameserver, ns",
+					Name:  "nameserver, ns",
 					Usage: "address of nameserver",
 				},
 			},
@@ -65,20 +51,22 @@ func main() {
 				}
 				return client.Run(c)
 			},
-			Flags: []cli.Flag {
-				Name: "nameserver, ns",
-				Usage: "address of nameserver",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "nameserver, ns",
+					Usage: "address of nameserver",
+				},
 			},
 		},
 		{
 			Name:  "nameserver",
 			Usage: "run nameserver",
 			Action: func(c *cli.Context) error {
-								return nameserver.Run(c)
+				return nameserver.Run(c)
 			},
 		},
 		{
-			Name: "RunAll",
+			Name:  "RunAll",
 			Usage: "Run all components together",
 			Action: func(c *cli.Context) error {
 				return launch.Run(c)

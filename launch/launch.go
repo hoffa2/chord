@@ -1,19 +1,19 @@
 package launch
 
 import (
-	"github.com/urfave/cli"
-	"os/exec"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
+
+	"github.com/urfave/cli"
 )
 
 const (
-	RunNodeCmd = "go run main.go node --port=8000 --nameserver=%s"
-	RunClientCmd = "go run main.go client --port=8000 --nameserver=%s"
+	RunNodeCmd       = "go run main.go node --port=8000 --nameserver=%s"
+	RunClientCmd     = "go run main.go client --port=8000 --nameserver=%s"
 	RunNameServerCmd = "go run main.go nameserver --port=8000"
 )
-
 
 func Run(c *cli.Context) error {
 	numhosts := c.String("hosts")
@@ -36,7 +36,7 @@ func Run(c *cli.Context) error {
 
 func runCommand(host, cwd, command string) {
 	cmd := &exec.Cmd{}
-	if  host == "localhost" {
+	if host == "localhost" {
 		cmd = exec.Command(command)
 	} else {
 		cmd = exec.Command("ssh -f %s 'cd %s; %s'", host, cwd, command)
@@ -53,7 +53,7 @@ func runCommand(host, cwd, command string) {
 func runNodes(cwd, numhosts, nameserver string) {
 
 	// Getting a list of uvrocks hosts
-	output, err := exec.Command("./rocks_list_hosts %s", numhosts).Output()
+	output, err := exec.Command("./rocks_list_hosts.sh %s", numhosts).Output()
 	if err != nil {
 		panic(err)
 	}

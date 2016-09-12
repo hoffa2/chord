@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/util"
 )
 
@@ -23,6 +24,7 @@ type Node struct {
 	objectStore map[string]string
 	nameServer  string
 	conn        http.Client
+	finger      []FingerTable
 }
 
 func readKey(r *http.Request) string {
@@ -30,7 +32,7 @@ func readKey(r *http.Request) string {
 	return vars["key"]
 }
 
-func (n *Node) PutKey(w http.ResponseWriter, r *http.Request) {
+func (n *Node) gutKey(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, NoValue, http.StatusBadRequest)
@@ -43,7 +45,7 @@ func (n *Node) PutKey(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (n *Node) GetKey(w http.ResponseWriter, r *http.Request) {
+func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 	key := readKey(r)
 
 	val, ok := n.objectStore[key]
@@ -79,4 +81,16 @@ func (n *Node) RegisterWithNameServer() {
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Could not register with nameserver: %s", n.nameServer)
 	}
+}
+
+func (n *Node) setupNodeRPC() {
+
+}
+
+func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+	return nil
+}
+
+func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
+	return nil
 }
