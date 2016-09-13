@@ -1,8 +1,10 @@
 package util
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -20,4 +22,10 @@ func WriteJson(w http.ResponseWriter, v interface{}) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(v)
+}
+
+func HashValue(str string) string {
+	h := sha1.New()
+	io.WriteString(h, str)
+	return string(h.Sum(nil))
 }

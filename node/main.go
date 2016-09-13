@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/netutils"
+	"github.com/hoffa2/chord/util"
 	"github.com/urfave/cli"
 )
 
@@ -14,6 +15,9 @@ func Run(c *cli.Context) error {
 	if port == "" {
 		port = "8000"
 	}
+
+	pre := c.String("pre")
+	succ := c.String("succ")
 
 	NameServerAddr := c.String("namserver")
 
@@ -24,7 +28,7 @@ func Run(c *cli.Context) error {
 		return err
 	}
 
-	id := createNodeID(n)
+	id := util.HashValue(n)
 
 	node := &Node{
 		nameServer: NameServerAddr,
@@ -32,7 +36,6 @@ func Run(c *cli.Context) error {
 	}
 
 	netutils.SetupRPCServer("8001", node)
-
 	// Registering the put and get methods
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")

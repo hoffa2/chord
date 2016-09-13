@@ -1,8 +1,6 @@
 package node
 
 import (
-	"crypto/sha1"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,12 +27,6 @@ type Node struct {
 	nameServer  string
 	conn        http.Client
 	finger      []FingerEntry
-}
-
-func createNodeID(hostname string) string {
-	h := sha1.New()
-	io.WriteString(h, hostname)
-	return string(h.Sum(nil))
 }
 
 func readKey(r *http.Request) string {

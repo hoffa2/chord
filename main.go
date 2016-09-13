@@ -29,6 +29,12 @@ func main() {
 				if !c.IsSet("nameserver") {
 					return errors.New("Nameserver flag must be set")
 				}
+				if !c.IsSet("pre") {
+					return errors.New("Predecessor flag must be set")
+				}
+				if !c.IsSet("succ") {
+					return errors.New("Successor flag must be set")
+				}
 				return node.Run(c)
 			},
 			Flags: []cli.Flag{
@@ -39,6 +45,14 @@ func main() {
 				cli.StringFlag{
 					Name:  "nameserver, ns",
 					Usage: "address of nameserver",
+				},
+				cli.StringFlag{
+					Name:  "pre",
+					Usage: "predecessor of node",
+				},
+				cli.StringFlag{
+					Name:  "succ",
+					Usage: "successor of node",
 				},
 			},
 		},
@@ -70,6 +84,16 @@ func main() {
 			Usage: "Run all components together",
 			Action: func(c *cli.Context) error {
 				return launch.Run(c)
+			},
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "nameserver, ns",
+					Usage: "address of nameserver",
+				},
+				cli.StringFlag{
+					Name:  "hosts, h",
+					Usage: "number of hosts to run",
+				},
 			},
 		},
 	}
