@@ -29,12 +29,6 @@ func main() {
 				if !c.IsSet("nameserver") {
 					return errors.New("Nameserver flag must be set")
 				}
-				if !c.IsSet("pre") {
-					return errors.New("Predecessor flag must be set")
-				}
-				if !c.IsSet("succ") {
-					return errors.New("Successor flag must be set")
-				}
 				return node.Run(c)
 			},
 			Flags: []cli.Flag{

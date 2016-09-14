@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	RunNodeCmd       = "go run main.go node --port=8000 --nameserver=%s --pre=%s --succ=%s"
+	RunNodeCmd       = "go run main.go node --port=8000 --nameserver=%s"
 	RunClientCmd     = "go run main.go client --port=8000 --nameserver=%s"
 	RunNameServerCmd = "go run main.go nameserver --port=8000"
 )
@@ -60,20 +60,14 @@ func runCommand(host, cwd, command string) error {
 }
 
 func runNodes(cwd, numhosts, nameserver string) error {
-	var pre int
-	var succ int
-
 	hosts, err := getNodeList(numhosts)
 	if err != nil {
 		return err
 	}
 
-	ipToHost, h := hashValuesSorted(hosts)
+	nodecmd := fmt.Sprintf(RunNodeCmd, nameserver)
 
-	for i, host := range h {
-		pre = (i - 1) % len(hosts)
-		succ = (i + 1) % len(hosts)
-		nodecmd := fmt.Sprintf(RunNodeCmd, nameserver, ipToHost[h[pre]], ipToHost[h[succ]])
+	for _, host := range hosts {
 		err = runCommand(host, cwd, nodecmd)
 		if err != nil {
 			return err

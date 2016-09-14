@@ -1,7 +1,8 @@
 package netutils
 
 import (
-	"log"
+	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/rpc"
@@ -45,22 +46,46 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	return nil
 }
 
-func (n *NodeComm) FindSuccessor(id string) string {
+func (n *NodeComm) FindSuccessor(id string) (string, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
 	if err != nil {
-		log.Fatal("Comm error: ", err)
+		return "", err
 	}
-	return reply.ID
+	return reply.ID, nil
 }
 
-func (n *NodeComm) FindPredecessor(id string) string {
+func (n *NodeComm) FindPredecessor(id string) (string, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
-	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
+	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
-		log.Fatal("Comm error: ", err)
+		return "", err
 	}
-	return reply.ID
+	return reply.ID, nil
+}
+
+func GetNodeIPs(address string) ([]string, error) {
+	var list []string
+	c := http.Client{}
+
+	req, err := http.NewRequest("GET", address, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("could not retrieve ipadresses from nameserver: %s", address)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(list)
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
 }

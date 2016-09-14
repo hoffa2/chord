@@ -15,10 +15,6 @@ func Run(c *cli.Context) error {
 	if port == "" {
 		port = "8000"
 	}
-
-	pre := c.String("pre")
-	succ := c.String("succ")
-
 	NameServerAddr := c.String("namserver")
 
 	r := mux.NewRouter()
@@ -28,14 +24,19 @@ func Run(c *cli.Context) error {
 		return err
 	}
 
-	id := util.HashValue(n)
-
 	node := &Node{
-		nameServer: NameServerAddr,
-		ID:         id,
+		nameServer:  NameServerAddr,
+		ID:          util.HashValue(n),
+		objectStore: make(map[string]string),
 	}
 
 	netutils.SetupRPCServer("8001", node)
+
+	err = node.JoinNetwork(n)
+	if err != nil {
+		return err
+	}
+
 	// Registering the put and get methods
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")

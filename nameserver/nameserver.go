@@ -2,9 +2,11 @@ package nameserver
 
 import (
 	"net/http"
+	"sync"
+
 	"github.com/gorilla/mux"
-	"github.com/urfave/cli"
 	"github.com/hoffa2/chord/util"
+	"github.com/urfave/cli"
 )
 
 const (
@@ -14,6 +16,7 @@ const (
 
 type NameServer struct {
 	IpAdresses []string
+	mu         sync.RWMutex
 }
 
 func Run(c *cli.Context) error {
@@ -36,12 +39,15 @@ func (n *NameServer) registerNode(w http.ResponseWriter, r *http.Request) {
 	if len(Ip) == 0 {
 		util.ErrorResponse(w, NoIp)
 	}
-
+	n.mu.Lock()
 	n.IpAdresses = append(n.IpAdresses, ip)
+	n.mu.Unlock()
 
 	w.WriteHeader(http.StatusOK)
 }
 
 func (n *NameServer) GetNodeList(w http.ResponseWriter, r *http.Request) {
+	n.mu.RLock()
 	util.WriteJson(w, n.IpAdresses)
+	n.mu.RUnlock()
 }
