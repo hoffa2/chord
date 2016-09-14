@@ -8,6 +8,7 @@ import (
 	"net/rpc"
 
 	"github.com/hoffa2/chord/comm"
+	"github.com/hoffa2/chord/util"
 )
 
 type NodeComm struct {
@@ -46,22 +47,22 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	return nil
 }
 
-func (n *NodeComm) FindSuccessor(id string) (string, error) {
+func (n *NodeComm) FindSuccessor(id util.Identifier) (util.Identifier, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return reply.ID, nil
 }
 
-func (n *NodeComm) FindPredecessor(id string) (string, error) {
+func (n *NodeComm) FindPredecessor(id util.Identifier) (util.Identifier, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	return reply.ID, nil
 }

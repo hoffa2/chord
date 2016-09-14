@@ -19,8 +19,8 @@ const (
 	NotFound = "No value on key: %s"
 )
 
-type Successor struct {
-	ID   string
+type Neighbor struct {
+	ID   util.Identifier
 	conn *netutils.NodeComm
 }
 
@@ -29,11 +29,12 @@ type Successor struct {
 type Node struct {
 	// Storing key-value pairs on the respective node
 	objectStore map[string]string
-	ID          string
+	ID          util.Identifier
 	nameServer  string
 	conn        http.Client
 	finger      []FingerEntry
-	succesor    Successor
+	next        Neighbor
+	prev        Neighbor
 }
 
 func readKey(r *http.Request) string {
@@ -42,11 +43,6 @@ func readKey(r *http.Request) string {
 }
 
 func (n Node) findKeySuccessor(k string) string {
-	if n.ID <= k {
-		if k < n.succesor.ID {
-
-		}
-	}
 	return ""
 }
 
@@ -108,25 +104,22 @@ func (n Node) registerNode() error {
 
 // Findsuccessor Finding the successor of n
 func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
-	k := args.ID
+	key := args.ID
+	var succ util.Identifier
 	// If node is the only one in the ring
-	if n.succesor.ID == n.ID {
+	if n.ID.IsEqual(n.next.ID) {
 		reply.ID = n.ID
 		return nil
 	}
 
-	if n.ID >= k && n.succesor.ID < k {
-		reply.ID = n.ID
-	} else if n.succesor.ID <= k {
-		succID, err := n.succesor.conn.FindSuccessor(k)
-		if err != nil {
-			return err
-		}
-		reply.ID = succID
-	} else if n.ID < k && (k <= n.succesor.ID || k >= n.succesor.ID) {
-		reply.ID = n.succesor.ID
-		// Todo: update successor
+	if key.InKeySpace(n.prev.ID, n.ID) {
+		succ = n.ID
+	} else if key.IsLess(n.next.ID) && key.IsLarger(n.ID) {
+		succ = n.next.ID
+	} else if key.IsLarger(n.ID) {
+		succ, err := n.next.conn.FindSuccessor(key)
 	}
+	reply.ID = succ
 	return nil
 }
 
@@ -134,7 +127,7 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	return nil
 }
 
-func (n *Node) setSuccessor(id string) {
+func (n *Node) setSuccessor(id util.Identifier) {
 
 }
 

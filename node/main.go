@@ -26,7 +26,7 @@ func Run(c *cli.Context) error {
 
 	node := &Node{
 		nameServer:  NameServerAddr,
-		ID:          util.HashValue(n),
+		ID:          util.StringToID(n),
 		objectStore: make(map[string]string),
 	}
 

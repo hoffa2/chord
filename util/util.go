@@ -29,3 +29,9 @@ func HashValue(str string) string {
 	io.WriteString(h, str)
 	return string(h.Sum(nil))
 }
+
+func HashValueByte(str string) []byte {
+	h := sha1.New()
+	io.WriteString(h, str)
+	return h.Sum(nil)
+}
