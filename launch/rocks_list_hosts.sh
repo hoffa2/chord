@@ -10,5 +10,5 @@ rocks list host \
     | sed 's/.$//' \
     | shuf \
     | head -n "$num_hosts" \
-    | tr '\n' ' '
+    | tr '\n' ' ' 
 echo
