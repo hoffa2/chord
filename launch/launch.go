@@ -5,8 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
+
 	"github.com/hoffa2/chord/util"
 	"github.com/urfave/cli"
 )
@@ -48,7 +49,7 @@ func runCommand(host, cwd, command string) error {
 	if host == "localhost" {
 		cmd = exec.Command(command)
 	} else {
-		cmd = exec.Command("ssh", "-f",host , fmt.Sprintf("cd %s; %s", cwd+"/..", command))
+		cmd = exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -72,7 +73,7 @@ func runNodes(cwd, numhosts, nameserver string) error {
 		err = runCommand(host, cwd, nodecmd)
 		if err != nil {
 			return err
-			}
+		}
 
 	}
 	return nil
@@ -99,13 +100,13 @@ func getNodeList(numhosts string) ([]string, error) {
 	output, err := exec.Command("sh", ListHosts, numhosts).Output()
 	if err != nil {
 		return nil, err
-	}	
+	}
 
 	end, err := strconv.Atoi(numhosts)
 	if err != nil {
 		return nil, err
 	}
 	hosts := strings.Split(string(output), " ")
-		
+
 	return hosts[:end], nil
 }
