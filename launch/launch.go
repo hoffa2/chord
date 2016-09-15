@@ -45,10 +45,12 @@ func Run(c *cli.Context) error {
 
 func runCommand(host, cwd, command string) error {
 	cmd := &exec.Cmd{}
+	var finalcmd string
 	if host == "localhost" {
 		cmd = exec.Command(command)
 	} else {
-		cmd = exec.Command("ssh -f %s 'cd %s; %s'", host, cwd, command)
+		finalcmd = fmt.Sprintf("ssh -f %s 'cd %s; %s'", host, cwd, command)
+		cmd = exec.Command(finalcmd)
 	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -94,14 +96,10 @@ func hashValuesSorted(vals []string) (map[string]string, []string) {
 }
 
 func getNodeList(numhosts string) ([]string, error) {
-	//cwd, err := os.Getwd()
-	//if err != nil {
-	//		return nil, err
-	//	}
 	// Getting a list of uvrocks hosts
 	output, err := exec.Command("sh", ListHosts, numhosts).Output()
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	hosts := strings.Split(string(output), " ")
