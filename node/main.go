@@ -41,5 +41,5 @@ func Run(c *cli.Context) error {
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 
-	return http.ListenAndServe("*:"+port, r)
+	return http.ListenAndServe(":"+port, r)
 }

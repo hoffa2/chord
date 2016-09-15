@@ -47,24 +47,45 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	return nil
 }
 
-func (n *NodeComm) FindSuccessor(id util.Identifier) (util.Identifier, error) {
+func (n *NodeComm) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
 	if err != nil {
-		return nil, err
+		return comm.NodeID{}, err
 	}
-	return reply.ID, nil
+	return reply, nil
 }
 
-func (n *NodeComm) FindPredecessor(id util.Identifier) (util.Identifier, error) {
+func (n *NodeComm) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
 	args := &comm.Args{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
-		return nil, err
+		return comm.NodeID{}, err
 	}
-	return reply.ID, nil
+	return reply, nil
+}
+
+// PutRemote Stores a value in its respective node
+func (n *NodeComm) PutRemote(key, value string) error {
+	args := &comm.KeyValue{Key: key, Value: value}
+	err := n.client.Call("NodeComm.PutRemote", args, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PutRemote Stores a value in its respective node
+func (n *NodeComm) GetRemote(key string) error {
+	args := &comm.KeyValue{Key: key}
+	reply := comm.KeyValue{}
+	err := n.client.Call("NodeComm.GetRemote", args, &reply)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetNodeIPs(address string) ([]string, error) {
