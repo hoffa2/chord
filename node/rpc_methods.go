@@ -4,6 +4,7 @@ import "github.com/hoffa2/chord/comm"
 
 // FindPredecessor RPC call to find a predecessor of Key on node n
 func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
+	n.nMu.RLock()
 	key := args.ID
 	var pre comm.NodeID
 	var err error
@@ -11,6 +12,8 @@ func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	if n.ID.IsEqual(n.prev.ID) {
 		reply.ID = n.ID
 		reply.IP = n.IP
+		n.nMu.RUnlock()
+		return nil
 	}
 
 	if key.IsBetween(n.ID, n.next.ID) {
@@ -21,15 +24,14 @@ func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 		reply.ID = pre.ID
 		reply.IP = pre.IP
 	}
-	if err != nil {
-		return err
-	}
 
-	return nil
+	n.nMu.RUnlock()
+	return err
 }
 
 // FindSuccessor Finding the successor of n
 func (n Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+	n.nMu.RLock()
 	key := args.ID
 	var succ comm.NodeID
 	var err error
@@ -37,6 +39,7 @@ func (n Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	if n.ID.IsEqual(n.next.ID) {
 		reply.ID = n.ID
 		reply.IP = n.IP
+		n.nMu.RUnlock()
 		return nil
 	}
 
@@ -49,14 +52,11 @@ func (n Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	} else if key.IsLarger(n.ID) {
 		succ, err = n.next.conn.FindSuccessor(key)
 	}
-	if err != nil {
-		return err
-	}
 
 	reply.ID = succ.ID
 	reply.IP = succ.IP
-
-	return nil
+	n.nMu.RUnlock()
+	return err
 }
 
 // UpdatePredecessor Updates n's predecessor and initializes an RPC connection

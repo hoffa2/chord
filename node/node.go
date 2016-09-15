@@ -42,7 +42,8 @@ type Neighbor struct {
 // of one node
 type Node struct {
 	// Storing key-value pairs on the respective node
-	mu sync.RWMutex
+	mu  sync.RWMutex
+	nMu sync.RWMutex
 	//
 	objectStore map[string]string
 	// Node Identifier
@@ -203,9 +204,30 @@ func (n Node) registerNode() error {
 	return nil
 }
 
+func (n *Node) unlinkNext() error {
+	if n.next.ID.IsEqual(n.ID) {
+		return nil
+	}
+	return netutils.CloseRPC(n.next.conn)
+}
+
+func (n *Node) unlinkPrev() error {
+	if n.prev.ID.IsEqual(n.ID) {
+		return nil
+	}
+	return netutils.CloseRPC(n.prev.conn)
+}
 func (n *Node) setPredecessor(id util.Identifier, ip string) error {
+	n.nMu.Lock()
 	c, err := netutils.ConnectRPC(ip)
 	if err != nil {
+		n.nMu.Unlock()
+		return err
+	}
+
+	err = n.unlinkPrev()
+	if err != nil {
+		n.nMu.Unlock()
 		return err
 	}
 
@@ -214,25 +236,33 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 		IP:   ip,
 		conn: c,
 	}
-
+	n.nMu.Unlock()
 	return nil
 }
 
 func (n *Node) setSuccessor(id util.Identifier, ip string) error {
+	n.nMu.Lock()
 	if id.IsEqual(n.ID) {
 		return nil
 	}
 
 	c, err := netutils.ConnectRPC(ip)
 	if err != nil {
+		n.nMu.Unlock()
 		return err
 	}
+	err = n.unlinkNext()
+	if err != nil {
+		n.nMu.Unlock()
+		return err
+	}
+
 	n.next = Neighbor{
 		ID:   id,
 		IP:   ip,
 		conn: c,
 	}
-
+	n.nMu.Unlock()
 	return nil
 }
 
