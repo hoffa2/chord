@@ -15,6 +15,7 @@ const (
 	RunNodeCmd       = "go run main.go node --port=8000 --nameserver=%s"
 	RunClientCmd     = "go run main.go client --port=8000 --nameserver=%s"
 	RunNameServerCmd = "go run main.go nameserver --port=8000"
+	ListHosts        = "/rocks_list_hosts.sh"
 )
 
 func Run(c *cli.Context) error {
@@ -93,8 +94,12 @@ func hashValuesSorted(vals []string) (map[string]string, []string) {
 }
 
 func getNodeList(numhosts string) ([]string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
 	// Getting a list of uvrocks hosts
-	output, err := exec.Command("./rocks_list_hosts.sh %s", numhosts).Output()
+	output, err := exec.Command("sh", cwd+ListHosts, numhosts).Output()
 	if err != nil {
 		return []string{}, err
 	}

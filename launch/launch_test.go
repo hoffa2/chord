@@ -11,3 +11,12 @@ func TestNodeSort(t *testing.T) {
 		fmt.Println(m[val])
 	}
 }
+
+func TestGetHosts(t *testing.T) {
+
+	hosts, err := getNodeList("3")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(hosts)
+}
