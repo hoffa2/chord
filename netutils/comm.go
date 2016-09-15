@@ -29,6 +29,10 @@ func ConnectRPC(host string) (*NodeComm, error) {
 	return nCom, nil
 }
 
+func CloseRPC(c *NodeComm) error {
+	return c.client.Close()
+}
+
 // SetupRPCServer Instantiates a RPC Server
 func SetupRPCServer(port string, api comm.NodeComm) error {
 	s := rpc.NewServer()
@@ -48,7 +52,7 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 }
 
 func (n *NodeComm) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
-	args := &comm.Args{ID: id}
+	args := &comm.NodeID{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
 	if err != nil {
@@ -58,7 +62,7 @@ func (n *NodeComm) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 }
 
 func (n *NodeComm) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
-	args := &comm.Args{ID: id}
+	args := &comm.NodeID{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
@@ -82,6 +86,24 @@ func (n *NodeComm) GetRemote(key string) error {
 	args := &comm.KeyValue{Key: key}
 	reply := comm.KeyValue{}
 	err := n.client.Call("NodeComm.GetRemote", args, &reply)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (n *NodeComm) UpdatePredecessor(id util.Identifier, ip string) error {
+	args := &comm.NodeID{ID: id, IP: ip}
+	err := n.client.Call("NodeComm.UpdatePredecessor", args, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (n *NodeComm) UpdateSuccessor(id util.Identifier, ip string) error {
+	args := &comm.NodeID{ID: id, IP: ip}
+	err := n.client.Call("NodeComm.UpdateSuccessor", args, nil)
 	if err != nil {
 		return err
 	}

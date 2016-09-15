@@ -10,42 +10,53 @@ import (
 	"sync"
 
 	"github.com/gorilla/mux"
-	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/netutils"
 	"github.com/hoffa2/chord/util"
 )
 
 const (
-	Keysize  = 12
-	NoValue  = "No value in body"
-	NotFound = "No value on key: %s"
+	// NoValue if a put request does not have a body
+	NoValue = "No value in body"
+	// NotFound If key cannot be found
+
+	// Internal Internal error
 	Internal = "Internal error: "
 )
 
 var (
-	NextToSmall = errors.New("Successor is less than n id")
-	PrevToLarge = errors.New("Predecessor is larger than n id")
+	ErrNotFound = errors.New("No value on key")
+	// ErrNextToSmall if the successor is too small
+	ErrNextToSmall = errors.New("Successor is less than n id")
+	// ErrPrevToLarge If the predecessor is too large
+	ErrPrevToLarge = errors.New("Predecessor is larger than n id")
 )
 
+// Neighbor Describing an adjacent node in the ring
 type Neighbor struct {
 	ID   util.Identifier
 	conn *netutils.NodeComm
 	IP   string
 }
 
-// Interface struct that represents the state
+// Node Interface struct that represents the state
 // of one node
 type Node struct {
 	// Storing key-value pairs on the respective node
-	mu          sync.RWMutex
+	mu sync.RWMutex
+	//
 	objectStore map[string]string
-	ID          util.Identifier
-	nameServer  string
-	conn        http.Client
-	finger      []FingerEntry
-	next        Neighbor
-	prev        Neighbor
-	IP          string
+	// Node Identifier
+	ID util.Identifier
+	// IP Address of nameserver
+	nameServer string
+	conn       http.Client
+	finger     []FingerEntry
+	// Successor of node
+	next Neighbor
+	// Predecessor of node
+	prev Neighbor
+	// Node IP
+	IP string
 }
 
 func readKey(r *http.Request) string {
@@ -58,6 +69,7 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	if k.InKeySpace(n.prev.ID, n.ID) {
 		return Neighbor{ID: n.ID}, nil
 	}
+	// TODO: Maybe we should check whether the key is in our successor's keyspace
 	s, err := n.next.conn.FindSuccessor(k)
 	if err != nil {
 		return Neighbor{}, nil
@@ -79,10 +91,46 @@ func (n *Node) getValue(key string) (string, error) {
 	val, ok := n.objectStore[key]
 	if !ok {
 		n.mu.RUnlock()
-		return "", fmt.Errorf(NotFound, key)
+		return "", ErrNotFound
 	}
 	n.mu.RUnlock()
 	return val, nil
+}
+
+func (n Node) findExistingConn(id util.Identifier) *netutils.NodeComm {
+	if id.IsEqual(n.next.ID) {
+		return n.next.conn
+	} else if id.IsEqual(n.prev.ID) {
+		return n.prev.conn
+	}
+	return nil
+}
+
+func (n Node) sendToSuccessor(key, val string, s Neighbor) error {
+	var err error
+	close := false
+	c := n.findExistingConn(s.ID)
+
+	// if we got an unfamiliar node
+	if c == nil {
+		c, err = netutils.ConnectRPC(s.IP)
+		if err != nil {
+			return err
+		}
+		close = true
+	}
+
+	err = c.PutRemote(key, val)
+	if err != nil {
+		return err
+	}
+
+	// if we got an unknown node - close connection
+	if close {
+		return netutils.CloseRPC(c)
+	}
+
+	return nil
 }
 
 func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
@@ -94,9 +142,9 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 
 	key := readKey(r)
 
-	kID := util.StringToID(key)
+	KID := util.StringToID(key)
 
-	s, err := n.findKeySuccessor(kID)
+	s, err := n.findKeySuccessor(KID)
 	if err != nil {
 		http.Error(w, Internal, http.StatusInternalServerError)
 		return
@@ -104,7 +152,12 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	if s.ID.IsEqual(n.ID) {
 		n.putValue(key, body)
 	} else {
-		putValueNeighbor(s)
+		err = n.sendToSuccessor(key, string(body), s)
+		if err != nil {
+			// TODO: Notify the actual error in some way
+			http.Error(w, Internal, http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -113,9 +166,10 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 	key := readKey(r)
 
-	val, ok := n.objectStore[key]
-	if !ok {
-		util.ErrorNotFound(w, NotFound, key)
+	val, err := n.getValue(key)
+	if err == ErrNotFound {
+		util.ErrorNotFound(w, "Key %s not found", key)
+		return
 	}
 
 	sendKey(w, val)
@@ -145,111 +199,6 @@ func (n Node) registerNode() error {
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("Could not register with nameserver: %s", n.nameServer)
-	}
-	return nil
-}
-
-// Findsuccessor Finding the successor of n
-func (n Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
-	key := args.ID
-	var succ comm.NodeID
-	var err error
-	// If node is the only one in the ring
-	if n.ID.IsEqual(n.next.ID) {
-		reply.ID = n.ID
-		reply.IP = n.IP
-		return nil
-	}
-
-	if key.InKeySpace(n.prev.ID, n.ID) {
-		succ.ID = n.ID
-		succ.IP = n.IP
-	} else if key.IsLess(n.next.ID) && key.IsLarger(n.ID) {
-		succ.ID = n.next.ID
-		succ.IP = n.next.IP
-	} else if key.IsLarger(n.ID) {
-		succ, err = n.next.conn.FindSuccessor(key)
-	}
-	if err != nil {
-		return err
-	}
-
-	reply.ID = succ.ID
-	reply.IP = succ.IP
-
-	return nil
-}
-
-// FindPredecessor RPC call to find a predecessor of Key on node n
-func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
-	key := args.ID
-	var pre comm.NodeID
-	var err error
-
-	if n.ID.IsEqual(n.prev.ID) {
-		reply.ID = n.ID
-		reply.IP = n.IP
-	}
-
-	if key.IsBetween(n.ID, n.next.ID) {
-		reply.ID = n.ID
-		reply.IP = n.IP
-	} else if key.IsLarger(n.next.ID) {
-		pre, err = n.next.conn.FindPredecessor(key)
-		reply.ID = pre.ID
-		reply.IP = pre.IP
-	}
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// UpdatePredecessor Updates n's predecessor and initializes an RPC connection
-func (n *Node) UpdatePredecessor(args *comm.Args, reply *comm.NodeID) error {
-	Ip := args.IP
-	Id := args.ID
-
-	if Id.IsLess(n.ID) {
-		return PrevToLarge
-	}
-
-	err := n.setPredecessor(Id, Ip)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// PutRemote Gets an RPC put request to store a Key/Value pair
-func (n *Node) PutRemote(args *comm.KeyValue, reply *comm.NodeID) error {
-	n.putValue(args.Key, []byte(args.Value))
-	return nil
-}
-
-// GetRemote Gets an RPC put request to store a Key/Value pair
-func (n *Node) GetRemote(args *comm.KeyValue, reply *comm.KeyValue) error {
-	val, err := n.getValue(args.Key)
-	if err != nil {
-		return err
-	}
-	reply.Value = val
-	return nil
-}
-
-// UpdateSuccessor Updates node n's successor and initializes an RPC connection
-func (n *Node) UpdateSuccessor(args *comm.Args, reply *comm.NodeID) error {
-	Ip := args.IP
-	Id := args.ID
-
-	if Id.IsLarger(n.ID) {
-		return PrevToLarge
-	}
-
-	err := n.setSuccessor(Id, Ip)
-	if err != nil {
-		return err
 	}
 	return nil
 }
@@ -287,7 +236,7 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	return nil
 }
 
-// registers itself in the network by asking a random
+// JoinNetwork registers itself in the network by asking a random
 // node found by issuing a request to the nameserver
 func (n *Node) JoinNetwork(id string) error {
 	err := n.registerNode()

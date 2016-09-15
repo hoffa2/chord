@@ -16,6 +16,8 @@ type KeyValue struct {
 	Value string
 }
 
+type Empty struct{}
+
 type NodeID struct {
 	ID util.Identifier
 	IP string
