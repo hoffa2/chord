@@ -38,7 +38,6 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	s := rpc.NewServer()
 
 	registerCommAPI(s, api)
-	rpc.HandleHTTP()
 
 	// the start means that we'll listen to
 	// all traffic; Not just localhost
@@ -47,7 +46,7 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 		return err
 	}
 
-	go http.Serve(l, nil)
+	go s.Accept(l)
 	return nil
 }
 
