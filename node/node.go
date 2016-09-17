@@ -34,7 +34,7 @@ var (
 // Neighbor Describing an adjacent node in the ring
 type Neighbor struct {
 	ID   util.Identifier
-	conn *netutils.NodeComm
+	conn *netutils.NodeRPC
 	IP   string
 }
 
@@ -98,7 +98,7 @@ func (n *Node) getValue(key string) (string, error) {
 	return val, nil
 }
 
-func (n Node) findExistingConn(id util.Identifier) *netutils.NodeComm {
+func (n Node) findExistingConn(id util.Identifier) *netutils.NodeRPC {
 	if id.IsEqual(n.next.ID) {
 		return n.next.conn
 	} else if id.IsEqual(n.prev.ID) {

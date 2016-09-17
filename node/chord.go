@@ -8,5 +8,5 @@ type FingerEntry struct {
 	start string
 	// IpAddress of node
 	ipAdress string
-	node     *netutils.NodeComm
+	node     *netutils.NodeRPC
 }

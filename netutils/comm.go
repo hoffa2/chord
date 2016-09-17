@@ -11,7 +11,7 @@ import (
 	"github.com/hoffa2/chord/util"
 )
 
-type NodeComm struct {
+type NodeRPC struct {
 	client *rpc.Client
 }
 
@@ -20,16 +20,16 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 }
 
 // ConnectRPC Instantiates a RPC connections
-func ConnectRPC(host string) (*NodeComm, error) {
+func ConnectRPC(host string) (*NodeRPC, error) {
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return nil, err
 	}
-	nCom := &NodeComm{client: rpc.NewClient(conn)}
+	nCom := &NodeRPC{client: rpc.NewClient(conn)}
 	return nCom, nil
 }
 
-func CloseRPC(c *NodeComm) error {
+func CloseRPC(c *NodeRPC) error {
 	return c.client.Close()
 }
 
@@ -50,7 +50,7 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	return nil
 }
 
-func (n *NodeComm) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
+func (n *NodeRPC) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 	args := &comm.NodeID{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
@@ -60,7 +60,7 @@ func (n *NodeComm) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 	return reply, nil
 }
 
-func (n *NodeComm) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
+func (n *NodeRPC) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
 	args := &comm.NodeID{ID: id}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
@@ -71,7 +71,7 @@ func (n *NodeComm) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
 }
 
 // PutRemote Stores a value in its respective node
-func (n *NodeComm) PutRemote(key, value string) error {
+func (n *NodeRPC) PutRemote(key, value string) error {
 	args := &comm.KeyValue{Key: key, Value: value}
 	err := n.client.Call("NodeComm.PutRemote", args, nil)
 	if err != nil {
@@ -81,7 +81,7 @@ func (n *NodeComm) PutRemote(key, value string) error {
 }
 
 // PutRemote Stores a value in its respective node
-func (n *NodeComm) GetRemote(key string) error {
+func (n *NodeRPC) GetRemote(key string) error {
 	args := &comm.KeyValue{Key: key}
 	reply := comm.KeyValue{}
 	err := n.client.Call("NodeComm.GetRemote", args, &reply)
@@ -91,7 +91,7 @@ func (n *NodeComm) GetRemote(key string) error {
 	return nil
 }
 
-func (n *NodeComm) UpdatePredecessor(id util.Identifier, ip string) error {
+func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
 	args := &comm.NodeID{ID: id, IP: ip}
 	err := n.client.Call("NodeComm.UpdatePredecessor", args, nil)
 	if err != nil {
@@ -100,7 +100,7 @@ func (n *NodeComm) UpdatePredecessor(id util.Identifier, ip string) error {
 	return nil
 }
 
-func (n *NodeComm) UpdateSuccessor(id util.Identifier, ip string) error {
+func (n *NodeRPC) UpdateSuccessor(id util.Identifier, ip string) error {
 	args := &comm.NodeID{ID: id, IP: ip}
 	err := n.client.Call("NodeComm.UpdateSuccessor", args, nil)
 	if err != nil {

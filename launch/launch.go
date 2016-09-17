@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	RunNodeCmd       = "go run main.go node --port=8000 --nameserver=%s"
-	RunClientCmd     = "go run main.go client --port=8000 --nameserver=%s"
-	RunNameServerCmd = "go run main.go nameserver --port=8000"
+	RunNodeCmd       = "chord node --port 8000 --nameserver %s"
+	RunClientCmd     = "chord client --port 8000 --nameserver %s"
+	RunNameServerCmd = "chord nameserver --port 8000"
 	ListHosts        = "rocks_list_hosts.sh"
 )
 

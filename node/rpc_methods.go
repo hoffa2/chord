@@ -3,7 +3,7 @@ package node
 import "github.com/hoffa2/chord/comm"
 
 // FindPredecessor RPC call to find a predecessor of Key on node n
-func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
+func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	n.nMu.RLock()
 	key := args.ID
 	var pre comm.NodeID
@@ -30,7 +30,7 @@ func (n Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 }
 
 // FindSuccessor Finding the successor of n
-func (n Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	n.nMu.RLock()
 	key := args.ID
 	var succ comm.NodeID
