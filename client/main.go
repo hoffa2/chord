@@ -10,9 +10,7 @@ func Run(c *cli.Context) error {
 
 	nameServerAddr := c.String("nameserver")
 
-	client := &Client{nameServer: nameServerAddr}
-
-	client.getNodeIPs()
+	_ = &Client{nameServer: nameServerAddr}
 
 	return nil
 }

@@ -74,7 +74,7 @@ func main() {
 			},
 		},
 		{
-			Name:  "RunAll",
+			Name:  "runall",
 			Usage: "Run all components together",
 			Action: func(c *cli.Context) error {
 				return launch.Run(c)
@@ -85,7 +85,7 @@ func main() {
 					Usage: "address of nameserver",
 				},
 				cli.StringFlag{
-					Name:  "hosts, h",
+					Name:  "hosts",
 					Usage: "number of hosts to run",
 				},
 			},
