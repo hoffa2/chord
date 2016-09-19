@@ -14,6 +14,13 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	var pre comm.NodeID
 	var err error
 
+	if n.prev.conn == nil {
+		reply.ID = string(n.id)
+		reply.IP = n.IP
+		n.nMu.RUnlock()
+		return nil
+	}
+
 	if n.id.IsEqual(n.prev.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
@@ -36,10 +43,7 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 
 // FindSuccessor Finding the successor of n
 func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
-	fmt.Println("lol")
 	n.nMu.RLock()
-
-	fmt.Println("lol2")
 	key := util.Identifier(args.ID)
 	var succ comm.NodeID
 	var err error
@@ -64,6 +68,7 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 
 	reply.ID = string(succ.ID)
 	reply.IP = succ.IP
+	fmt.Printf("Node %s returned %s as succ(%s)\n", n.IP, succ.IP, args.ID)
 	n.nMu.RUnlock()
 	return err
 }

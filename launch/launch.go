@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/goware/prefixer"
 	"github.com/hoffa2/chord/util"
@@ -19,7 +20,7 @@ import (
 )
 
 var (
-	RunNodeCmd       = "chord node --port 8000 --nameserver %s:8000"
+	RunNodeCmd       = "chord node --port 8030 --nameserver %s:8030"
 	RunClientCmd     = []string{"chord", "client", "--port 8000"}
 	RunNameServerCmd = "chord nameserver"
 	ListHosts        = "rocks_list_hosts.sh"
@@ -150,6 +151,7 @@ func (c *Connection) runNodes(cwd, numhosts, nameserver string) error {
 	nodecmd := fmt.Sprintf(RunNodeCmd, nameserver)
 	log.Printf("Running %s nodes\n", numhosts)
 	for _, host := range hosts {
+		time.Sleep(1 * time.Second)
 		err = c.runSSHCommand(host, cwd, nodecmd)
 		if err != nil {
 			return err

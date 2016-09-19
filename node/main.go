@@ -14,7 +14,7 @@ import (
 func Run(c *cli.Context) error {
 	port := c.String("port")
 	if port == "" {
-		port = "8000"
+		port = "8030"
 	}
 	NameServerAddr := c.String("nameserver")
 

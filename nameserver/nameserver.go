@@ -1,7 +1,6 @@
 package nameserver
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -23,7 +22,7 @@ type NameServer struct {
 func Run(c *cli.Context) error {
 	port := c.String("port")
 	if port == "" {
-		port = "8000"
+		port = "8030"
 	}
 
 	ns := &NameServer{}
@@ -41,7 +40,6 @@ func (n *NameServer) registerNode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n.mu.Lock()
-	fmt.Println(ip)
 	n.IpAdresses = append(n.IpAdresses, ip)
 	n.mu.Unlock()
 

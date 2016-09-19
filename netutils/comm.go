@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"time"
 
 	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/util"
@@ -15,6 +16,10 @@ import (
 type NodeRPC struct {
 	client *rpc.Client
 }
+
+var (
+	PORT = ":8001"
+)
 
 func RegisterNewType(t interface{}) {
 	gob.Register(t)
@@ -27,7 +32,7 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 // ConnectRPC Instantiates a RPC connections
 func ConnectRPC(host string) (*NodeRPC, error) {
 	fmt.Println(host)
-	conn, err := net.Dial("tcp", host)
+	conn, err := net.Dial("tcp", host+PORT)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +47,6 @@ func ConnectRPC(host string) (*NodeRPC, error) {
 		client.Close()
 		return nil, fmt.Errorf("Init failed")
 	}
-	fmt.Println("Successfully initiated rpc comm")
 	nCom := &NodeRPC{client: client}
 	return nCom, nil
 }
@@ -73,10 +77,8 @@ func (n *NodeRPC) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindSuccessor", &comm.Args{ID: string(id)}, &reply)
 	if err != nil {
-		fmt.Println("asdasdad")
 		return comm.NodeID{}, err
 	}
-	fmt.Println("returned")
 	return reply, nil
 }
 
@@ -101,14 +103,14 @@ func (n *NodeRPC) PutRemote(key, value string) error {
 }
 
 // PutRemote Stores a value in its respective node
-func (n *NodeRPC) GetRemote(key string) error {
+func (n *NodeRPC) GetRemote(key string) (string, error) {
 	args := &comm.KeyValue{Key: key}
 	reply := comm.KeyValue{}
 	err := n.client.Call("NodeComm.GetRemote", args, &reply)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return reply.Key, nil
 }
 
 func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
@@ -131,7 +133,7 @@ func (n *NodeRPC) UpdateSuccessor(id util.Identifier, ip string) error {
 
 func GetNodeIPs(address string) ([]string, error) {
 	var list []string
-	c := http.Client{}
+	c := http.Client{Timeout: time.Duration(time.Second * 2)}
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/", address), nil)
 	if err != nil {

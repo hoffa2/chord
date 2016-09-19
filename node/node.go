@@ -71,11 +71,13 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	if k.InKeySpace(n.prev.id, n.id) {
 		return Neighbor{id: n.id}, nil
 	}
+	fmt.Printf("Looking for %s on node %s\n", string(k), n.next.IP)
 	// TODO: Maybe we should check whether the key is in our successor's keyspace
 	s, err := n.next.conn.FindSuccessor(k)
 	if err != nil {
 		return Neighbor{}, nil
 	}
+	fmt.Printf("Found %s's successor: %s\n", string(k), s.IP)
 	return Neighbor{
 		id: util.StringToID(s.ID),
 		IP: s.IP,
@@ -89,6 +91,7 @@ func (n *Node) putValue(key string, body []byte) {
 }
 
 func (n *Node) getValue(key string) (string, error) {
+
 	n.mu.RLock()
 	val, ok := n.objectStore[key]
 	if !ok {
@@ -135,6 +138,33 @@ func (n Node) sendToSuccessor(key, val string, s Neighbor) error {
 	return nil
 }
 
+func (n Node) getFromSuccessor(key string, s Neighbor) (string, error) {
+	var err error
+	close := false
+	c := n.findExistingConn(s.id)
+
+	// if we got an unfamiliar node
+	if c == nil {
+		c, err = netutils.ConnectRPC(s.IP)
+		if err != nil {
+			return "", err
+		}
+		close = true
+	}
+
+	val, err := c.GetRemote(key)
+	if err != nil {
+		return "", err
+	}
+
+	// if we got an unknown node - close connection
+	if close {
+		return val, netutils.CloseRPC(c)
+	}
+
+	return val, nil
+}
+
 func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -152,12 +182,14 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.id.IsEqual(n.id) {
+		fmt.Printf("Putting key %s on node %s\n", key, n.IP)
 		n.putValue(key, body)
 	} else {
+		fmt.Printf("sending key %s to %s\n", key, s.IP)
 		err = n.sendToSuccessor(key, string(body), s)
 		if err != nil {
 			// TODO: Notify the actual error in some way
-			http.Error(w, Internal, http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -166,11 +198,28 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
+	var val string
+	var err error
 	key := readKey(r)
 
-	val, err := n.getValue(key)
+	s, err := n.findKeySuccessor(util.StringToID(key))
+	if err != nil {
+		http.Error(w, Internal, http.StatusInternalServerError)
+		return
+	}
+	fmt.Printf("Successor(%s) is %s\n", key, s.IP)
+	if s.id.IsEqual(n.id) {
+		val, err = n.getValue(key)
+	} else {
+		fmt.Printf("Getting key %s from %s\n", key, s.IP)
+		val, err = n.getFromSuccessor(key, s)
+	}
 	if err == ErrNotFound {
 		util.ErrorNotFound(w, "Key %s not found", key)
+		return
+	} else if err != nil {
+		log.Println(err.Error())
+		http.Error(w, Internal, http.StatusInternalServerError)
 		return
 	}
 
@@ -205,14 +254,20 @@ func (n *Node) unlinkNext() error {
 	if n.next.id.IsEqual(n.id) {
 		return nil
 	}
-	return netutils.CloseRPC(n.next.conn)
+	if n.next.conn != nil {
+		return netutils.CloseRPC(n.next.conn)
+	}
+	return nil
 }
 
 func (n *Node) unlinkPrev() error {
 	if n.prev.id.IsEqual(n.id) {
 		return nil
 	}
-	return netutils.CloseRPC(n.prev.conn)
+	if n.prev.conn != nil {
+		return netutils.CloseRPC(n.prev.conn)
+	}
+	return nil
 }
 func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 	n.nMu.Lock()
@@ -233,6 +288,7 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 		IP:   ip,
 		conn: c,
 	}
+	fmt.Printf("Node %s updated pre to %s\n", n.IP, ip)
 	n.nMu.Unlock()
 	return nil
 }
@@ -245,7 +301,7 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 		return nil
 	}
 
-	c, err := netutils.ConnectRPC(ip + ":8001")
+	c, err := netutils.ConnectRPC(ip)
 	if err != nil {
 		n.nMu.Unlock()
 		return err
@@ -261,6 +317,8 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 		IP:   ip,
 		conn: c,
 	}
+
+	fmt.Printf("Node %s updated next to %s\n", n.IP, ip)
 	n.nMu.Unlock()
 	return nil
 }
@@ -297,24 +355,44 @@ func JoinNetwork(n *Node, id string) error {
 	rnode = n.getRandomNode(nodes)
 
 	// Asking the first node who's my successor
-	c, err := netutils.ConnectRPC(rnode + ":8001")
+	c, err := netutils.ConnectRPC(rnode)
 	if err != nil {
 		return err
 	}
 
-	// setting RPC connection object
-	// Todo: find a better way to do this
-	n.next.conn = c
-
+	fmt.Printf("%s asks %s\n", n.IP, rnode)
 	succ, err := c.FindSuccessor(n.id)
 	if err != nil {
 		return err
 	}
 
+	fmt.Printf("REturned %s\n", succ.IP)
 	err = n.setSuccessor(util.StringToID(succ.ID), succ.IP)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	fmt.Printf("%s asks %s\n", n.IP, n.next.IP)
+	pre, err := n.next.conn.FindPredecessor(n.id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("RETURNED %s\n", succ.IP)
+	err = n.next.conn.UpdatePredecessor(n.id, n.IP)
+	if err != nil {
+		return err
+	}
+
+	err = n.setPredecessor(util.StringToID(pre.ID), pre.IP)
+	if err != nil {
+		return err
+	}
+
+	err = n.prev.conn.UpdateSuccessor(n.id, n.IP)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Node: %s joined network; Pre = %s, Next = %s\n", n.IP, n.prev.IP, n.next.IP)
+	return netutils.CloseRPC(c)
 }
