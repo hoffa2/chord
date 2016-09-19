@@ -1,6 +1,7 @@
 package nameserver
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -29,17 +30,18 @@ func Run(c *cli.Context) error {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", ns.GetNodeList).Methods("GET")
-	r.HandleFunc("/", ns.registerNode).Methods("PUT")
-
+	r.HandleFunc("/", ns.registerNode).Methods("POST")
 	return http.ListenAndServe(":"+port, r)
 }
 
 func (n *NameServer) registerNode(w http.ResponseWriter, r *http.Request) {
-	ip := r.PostForm.Get(Ip)
-	if len(Ip) == 0 {
+	ip := r.PostFormValue("ip")
+	if len(ip) == 0 {
 		util.ErrorResponse(w, NoIp)
+		return
 	}
 	n.mu.Lock()
+	fmt.Println(ip)
 	n.IpAdresses = append(n.IpAdresses, ip)
 	n.mu.Unlock()
 

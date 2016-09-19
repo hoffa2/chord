@@ -8,4 +8,5 @@ type NodeComm interface {
 	GetRemote(args *KeyValue, reply *KeyValue) error
 	UpdatePredecessor(args *NodeID, reply *Empty) error
 	UpdateSuccessor(args *NodeID, reply *Empty) error
+	Init(args *Args, reply *NodeID) error
 }

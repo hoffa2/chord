@@ -1,23 +1,41 @@
 package launch
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
+	"github.com/goware/prefixer"
 	"github.com/hoffa2/chord/util"
+	"github.com/kvz/logstreamer"
 	"github.com/urfave/cli"
 )
 
-const (
-	RunNodeCmd       = "chord node --port 8000 --nameserver %s"
-	RunClientCmd     = "chord client --port 8000 --nameserver %s"
-	RunNameServerCmd = "chord nameserver --port 8000"
+var (
+	RunNodeCmd       = "chord node --port 8000 --nameserver %s:8000"
+	RunClientCmd     = []string{"chord", "client", "--port 8000"}
+	RunNameServerCmd = "chord nameserver"
 	ListHosts        = "rocks_list_hosts.sh"
 )
+
+type SSHConn struct {
+	inn     bytes.Buffer
+	out     bytes.Buffer
+	host    string
+	process string
+	cmd     *exec.Cmd
+}
+
+type Connection struct {
+	conns []*SSHConn
+}
 
 func Run(c *cli.Context) error {
 	numhosts := c.String("hosts")
@@ -28,32 +46,65 @@ func Run(c *cli.Context) error {
 		return err
 	}
 
+	conns := new(Connection)
 	// run nameserver
-	err = runCommand(nameserver, cwd, RunNameServerCmd)
+	err = conns.runSSHCommand(nameserver, cwd, RunNameServerCmd)
 	if err != nil {
 		return err
 	}
 
-	runNodes(cwd, numhosts, nameserver)
-
-	err = runCommand("localhost", cwd, fmt.Sprintf(RunClientCmd, nameserver))
+	err = conns.runNodes(cwd, numhosts, nameserver)
 	if err != nil {
 		return err
 	}
+
+	conns.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", nameserver))
+	if err != nil {
+		return err
+	}
+
+	ch := make(chan os.Signal, 2)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(ch, os.Interrupt, syscall.SIGINT)
+
+	// wait for termination signal
+	<-ch
+	conns.CloseConnections()
 
 	return nil
 }
 
-func runCommand(host, cwd, command string) error {
-	cmd := &exec.Cmd{}
-	if host == "localhost" {
-		cmd = exec.Command(command)
-	} else {
-		cmd = exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
+func (c *Connection) CloseConnections() {
+	for _, conn := range c.conns {
+		if conn.host != "localhost" {
+			_, err := exec.Command("ssh", "-f", conn.host, fmt.Sprintf("pgrep -f \"%s\" | xargs kill -s SIGINT\n", conn.process)).Output()
+			if err != nil {
+				log.Println(err)
+			}
+		}
+		err := conn.cmd.Process.Kill()
+		if err != nil {
+			log.Println(err)
+		}
 	}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+}
 
+func (c *Connection) runCommand(command string, args ...string) error {
+
+	cmd := exec.Command(command, args...)
+
+	sshconn := &SSHConn{
+		host:    "localhost",
+		cmd:     cmd,
+		process: command,
+	}
+
+	prefixReader := prefixer.New(&sshconn.out, "Localhost")
+	cmd.Stdout = &sshconn.out
+	prefixReader.WriteTo(os.Stdout)
+	cmd.Stdin = &sshconn.inn
+
+	c.conns = append(c.conns, sshconn)
 	err := cmd.Start()
 	if err != nil {
 		return err
@@ -61,16 +112,45 @@ func runCommand(host, cwd, command string) error {
 	return nil
 }
 
-func runNodes(cwd, numhosts, nameserver string) error {
+func (c *Connection) runSSHCommand(host, cwd, command string) error {
+
+	log.Printf("Running %s on %s\n", command, host)
+	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
+
+	logger := log.New(os.Stdout, host+" -->", log.Ldate|log.Ltime)
+
+	logStreamerOut := logstreamer.NewLogstreamer(logger, "stdout", false)
+	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
+
+	sshconn := &SSHConn{
+		host:    host,
+		cmd:     cmd,
+		process: command,
+	}
+	fmt.Println(command)
+	cmd.Stdout = logStreamerOut
+	cmd.Stdin = &sshconn.inn
+	cmd.Stderr = logStreamerErr
+
+	c.conns = append(c.conns, sshconn)
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Connection) runNodes(cwd, numhosts, nameserver string) error {
 	hosts, err := getNodeList(numhosts)
 	if err != nil {
 		return err
 	}
 
 	nodecmd := fmt.Sprintf(RunNodeCmd, nameserver)
-
+	log.Printf("Running %s nodes\n", numhosts)
 	for _, host := range hosts {
-		err = runCommand(host, cwd, nodecmd)
+		err = c.runSSHCommand(host, cwd, nodecmd)
 		if err != nil {
 			return err
 		}
@@ -107,6 +187,10 @@ func getNodeList(numhosts string) ([]string, error) {
 		return nil, err
 	}
 	hosts := strings.Split(string(output), " ")
+
+	if end >= len(hosts) {
+		return nil, fmt.Errorf("Something went wrong when converting numhosts")
+	}
 
 	return hosts[:end], nil
 }

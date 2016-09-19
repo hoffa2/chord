@@ -24,8 +24,8 @@ func (id Identifier) IsEqual(b Identifier) bool {
 func StringToID(str string) Identifier {
 	var n Identifier
 	b := []byte(str)
-	for i, val := range b {
-		n[i] = val
+	for _, val := range b {
+		n = append(n, val)
 	}
 	return n
 }

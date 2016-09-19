@@ -3,6 +3,7 @@ package node
 import (
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/netutils"
@@ -15,7 +16,7 @@ func Run(c *cli.Context) error {
 	if port == "" {
 		port = "8000"
 	}
-	NameServerAddr := c.String("namserver")
+	NameServerAddr := c.String("nameserver")
 
 	r := mux.NewRouter()
 
@@ -24,15 +25,21 @@ func Run(c *cli.Context) error {
 		return err
 	}
 
-	node := &Node{
-		nameServer:  NameServerAddr,
-		ID:          util.StringToID(n),
-		objectStore: make(map[string]string),
+	client := http.Client{
+		Timeout: time.Duration(time.Second * 2),
 	}
 
-	netutils.SetupRPCServer("8001", node)
+	node := &Node{
+		nameServer:  NameServerAddr,
+		IP:          n,
+		id:          util.StringToID(n),
+		objectStore: make(map[string]string),
+		conn:        client,
+	}
 
-	err = node.JoinNetwork(n)
+	go netutils.SetupRPCServer("8001", node)
+
+	err = JoinNetwork(node, n)
 	if err != nil {
 		return err
 	}

@@ -1,12 +1,9 @@
 package comm
 
-import "github.com/hoffa2/chord/util"
-
 // Args arguments to an RPC
 type Args struct {
 	// Identifier of a node
-	ID util.Identifier
-	IP string
+	ID string
 }
 
 // KeyValue Arguments used in
@@ -16,9 +13,12 @@ type KeyValue struct {
 	Value string
 }
 
+type Test struct {
+}
+
 type Empty struct{}
 
 type NodeID struct {
-	ID util.Identifier
+	ID string
 	IP string
 }

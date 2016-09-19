@@ -1,6 +1,7 @@
 package netutils
 
 import (
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -15,17 +16,34 @@ type NodeRPC struct {
 	client *rpc.Client
 }
 
+func RegisterNewType(t interface{}) {
+	gob.Register(t)
+}
+
 func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 	server.RegisterName("NodeComm", comm)
 }
 
 // ConnectRPC Instantiates a RPC connections
 func ConnectRPC(host string) (*NodeRPC, error) {
+	fmt.Println(host)
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return nil, err
 	}
-	nCom := &NodeRPC{client: rpc.NewClient(conn)}
+	client := rpc.NewClient(conn)
+	var r comm.NodeID
+	err = client.Call("NodeComm.Init", &comm.Args{ID: "init"}, &r)
+	if err != nil {
+		client.Close()
+		return nil, err
+	}
+	if r.ID != "init" {
+		client.Close()
+		return nil, fmt.Errorf("Init failed")
+	}
+	fmt.Println("Successfully initiated rpc comm")
+	nCom := &NodeRPC{client: client}
 	return nCom, nil
 }
 
@@ -41,7 +59,7 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 
 	// the start means that we'll listen to
 	// all traffic; Not just localhost
-	l, err := net.Listen("tcp", "*:"+port)
+	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err
 	}
@@ -51,17 +69,19 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 }
 
 func (n *NodeRPC) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
-	args := &comm.NodeID{ID: id}
+	//args := &comm.NodeID{ID: []byte(id)}
 	var reply comm.NodeID
-	err := n.client.Call("NodeComm.FindSuccessor", args, &reply)
+	err := n.client.Call("NodeComm.FindSuccessor", &comm.Args{ID: string(id)}, &reply)
 	if err != nil {
+		fmt.Println("asdasdad")
 		return comm.NodeID{}, err
 	}
+	fmt.Println("returned")
 	return reply, nil
 }
 
 func (n *NodeRPC) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
-	args := &comm.NodeID{ID: id}
+	args := &comm.NodeID{ID: string(id)}
 	var reply comm.NodeID
 	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
@@ -92,7 +112,7 @@ func (n *NodeRPC) GetRemote(key string) error {
 }
 
 func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
-	args := &comm.NodeID{ID: id, IP: ip}
+	args := &comm.NodeID{ID: string(id), IP: ip}
 	err := n.client.Call("NodeComm.UpdatePredecessor", args, nil)
 	if err != nil {
 		return err
@@ -101,7 +121,7 @@ func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
 }
 
 func (n *NodeRPC) UpdateSuccessor(id util.Identifier, ip string) error {
-	args := &comm.NodeID{ID: id, IP: ip}
+	args := &comm.NodeID{ID: string(id), IP: ip}
 	err := n.client.Call("NodeComm.UpdateSuccessor", args, nil)
 	if err != nil {
 		return err
@@ -113,7 +133,7 @@ func GetNodeIPs(address string) ([]string, error) {
 	var list []string
 	c := http.Client{}
 
-	req, err := http.NewRequest("GET", address, nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/", address), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +146,7 @@ func GetNodeIPs(address string) ([]string, error) {
 		return nil, fmt.Errorf("could not retrieve ipadresses from nameserver: %s", address)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(list)
+	err = json.NewDecoder(resp.Body).Decode(&list)
 	if err != nil {
 		return nil, err
 	}

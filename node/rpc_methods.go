@@ -1,25 +1,30 @@
 package node
 
-import "github.com/hoffa2/chord/comm"
+import (
+	"fmt"
+
+	"github.com/hoffa2/chord/comm"
+	"github.com/hoffa2/chord/util"
+)
 
 // FindPredecessor RPC call to find a predecessor of Key on node n
 func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	n.nMu.RLock()
-	key := args.ID
+	key := util.Identifier(args.ID)
 	var pre comm.NodeID
 	var err error
 
-	if n.ID.IsEqual(n.prev.ID) {
-		reply.ID = n.ID
+	if n.id.IsEqual(n.prev.id) {
+		reply.ID = string(n.id)
 		reply.IP = n.IP
 		n.nMu.RUnlock()
 		return nil
 	}
 
-	if key.IsBetween(n.ID, n.next.ID) {
-		reply.ID = n.ID
+	if key.IsBetween(n.id, n.next.id) {
+		reply.ID = string(n.id)
 		reply.IP = n.IP
-	} else if key.IsLarger(n.next.ID) {
+	} else if key.IsLarger(n.next.id) {
 		pre, err = n.next.conn.FindPredecessor(key)
 		reply.ID = pre.ID
 		reply.IP = pre.IP
@@ -31,29 +36,33 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 
 // FindSuccessor Finding the successor of n
 func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+	fmt.Println("lol")
 	n.nMu.RLock()
-	key := args.ID
+
+	fmt.Println("lol2")
+	key := util.Identifier(args.ID)
 	var succ comm.NodeID
 	var err error
 	// If node is the only one in the ring
-	if n.ID.IsEqual(n.next.ID) {
-		reply.ID = n.ID
+	if n.id.IsEqual(n.next.id) {
+		reply.ID = string(n.id)
 		reply.IP = n.IP
 		n.nMu.RUnlock()
 		return nil
 	}
 
-	if key.InKeySpace(n.prev.ID, n.ID) {
-		succ.ID = n.ID
+	if key.InKeySpace(n.prev.id, n.id) {
+		succ.ID = string(n.id)
 		succ.IP = n.IP
-	} else if key.IsLess(n.next.ID) && key.IsLarger(n.ID) {
-		succ.ID = n.next.ID
+	} else if key.IsLess(n.next.id) && key.IsLarger(n.id) {
+		succ.ID = string(n.next.id)
 		succ.IP = n.next.IP
-	} else if key.IsLarger(n.ID) {
+	} else if key.IsLarger(n.id) {
+		fmt.Println("Finding next successor")
 		succ, err = n.next.conn.FindSuccessor(key)
 	}
 
-	reply.ID = succ.ID
+	reply.ID = string(succ.ID)
 	reply.IP = succ.IP
 	n.nMu.RUnlock()
 	return err
@@ -64,7 +73,7 @@ func (n *Node) UpdatePredecessor(args *comm.NodeID, reply *comm.Empty) error {
 	IP := args.IP
 	ID := args.ID
 
-	err := n.setPredecessor(ID, IP)
+	err := n.setPredecessor(util.StringToID(ID), IP)
 	if err != nil {
 		return err
 	}
@@ -92,9 +101,14 @@ func (n *Node) UpdateSuccessor(args *comm.NodeID, reply *comm.Empty) error {
 	IP := args.IP
 	ID := args.ID
 
-	err := n.setSuccessor(ID, IP)
+	err := n.setSuccessor(util.StringToID(ID), IP)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (n *Node) Init(args *comm.Args, reply *comm.NodeID) error {
+	reply.ID = args.ID
 	return nil
 }

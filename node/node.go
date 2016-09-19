@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"strings"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -33,7 +34,7 @@ var (
 
 // Neighbor Describing an adjacent node in the ring
 type Neighbor struct {
-	ID   util.Identifier
+	id   util.Identifier
 	conn *netutils.NodeRPC
 	IP   string
 }
@@ -47,7 +48,7 @@ type Node struct {
 	//
 	objectStore map[string]string
 	// Node Identifier
-	ID util.Identifier
+	id util.Identifier
 	// IP Address of nameserver
 	nameServer string
 	conn       http.Client
@@ -67,8 +68,8 @@ func readKey(r *http.Request) string {
 
 func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	// I'm the successor
-	if k.InKeySpace(n.prev.ID, n.ID) {
-		return Neighbor{ID: n.ID}, nil
+	if k.InKeySpace(n.prev.id, n.id) {
+		return Neighbor{id: n.id}, nil
 	}
 	// TODO: Maybe we should check whether the key is in our successor's keyspace
 	s, err := n.next.conn.FindSuccessor(k)
@@ -76,7 +77,7 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 		return Neighbor{}, nil
 	}
 	return Neighbor{
-		ID: s.ID,
+		id: util.StringToID(s.ID),
 		IP: s.IP,
 	}, nil
 }
@@ -99,9 +100,9 @@ func (n *Node) getValue(key string) (string, error) {
 }
 
 func (n Node) findExistingConn(id util.Identifier) *netutils.NodeRPC {
-	if id.IsEqual(n.next.ID) {
+	if id.IsEqual(n.next.id) {
 		return n.next.conn
-	} else if id.IsEqual(n.prev.ID) {
+	} else if id.IsEqual(n.prev.id) {
 		return n.prev.conn
 	}
 	return nil
@@ -110,7 +111,7 @@ func (n Node) findExistingConn(id util.Identifier) *netutils.NodeRPC {
 func (n Node) sendToSuccessor(key, val string, s Neighbor) error {
 	var err error
 	close := false
-	c := n.findExistingConn(s.ID)
+	c := n.findExistingConn(s.id)
 
 	// if we got an unfamiliar node
 	if c == nil {
@@ -150,7 +151,7 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, Internal, http.StatusInternalServerError)
 		return
 	}
-	if s.ID.IsEqual(n.ID) {
+	if s.id.IsEqual(n.id) {
 		n.putValue(key, body)
 	} else {
 		err = n.sendToSuccessor(key, string(body), s)
@@ -189,30 +190,26 @@ func (n Node) registerNode() error {
 		return err
 	}
 
-	req, err := http.NewRequest("PUT", n.nameServer, strings.NewReader(hostname))
+	resp, err := n.conn.PostForm(fmt.Sprintf("http://%s/", n.nameServer), url.Values{"ip": {hostname}})
 	if err != nil {
-		return err
-	}
-
-	resp, err := n.conn.Do(req)
-	if err != nil {
+		log.Println("error when connectiong to nameserver")
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Could not register with nameserver: %s", n.nameServer)
+		return fmt.Errorf("Error: %d; Could not register with nameserver: %s", resp.StatusCode, n.nameServer)
 	}
 	return nil
 }
 
 func (n *Node) unlinkNext() error {
-	if n.next.ID.IsEqual(n.ID) {
+	if n.next.id.IsEqual(n.id) {
 		return nil
 	}
 	return netutils.CloseRPC(n.next.conn)
 }
 
 func (n *Node) unlinkPrev() error {
-	if n.prev.ID.IsEqual(n.ID) {
+	if n.prev.id.IsEqual(n.id) {
 		return nil
 	}
 	return netutils.CloseRPC(n.prev.conn)
@@ -232,7 +229,7 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 	}
 
 	n.prev = Neighbor{
-		ID:   id,
+		id:   id,
 		IP:   ip,
 		conn: c,
 	}
@@ -242,11 +239,13 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 
 func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	n.nMu.Lock()
-	if id.IsEqual(n.ID) {
+	if id.IsEqual(n.id) {
+		fmt.Println("I'm alone")
+		n.nMu.Unlock()
 		return nil
 	}
 
-	c, err := netutils.ConnectRPC(ip)
+	c, err := netutils.ConnectRPC(ip + ":8001")
 	if err != nil {
 		n.nMu.Unlock()
 		return err
@@ -258,7 +257,7 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	}
 
 	n.next = Neighbor{
-		ID:   id,
+		id:   id,
 		IP:   ip,
 		conn: c,
 	}
@@ -266,9 +265,19 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	return nil
 }
 
+func (n Node) getRandomNode(nodes []string) string {
+	for _, node := range nodes {
+		if node != n.IP {
+			return node
+		}
+	}
+	return ""
+}
+
 // JoinNetwork registers itself in the network by asking a random
 // node found by issuing a request to the nameserver
-func (n *Node) JoinNetwork(id string) error {
+func JoinNetwork(n *Node, id string) error {
+	var rnode string
 	err := n.registerNode()
 	if err != nil {
 		return err
@@ -279,14 +288,16 @@ func (n *Node) JoinNetwork(id string) error {
 		return err
 	}
 
-	if len(nodes) == 0 {
+	if len(nodes) == 1 && nodes[0] == n.IP {
 		// I'm alone!!!
 		n.setSuccessor(util.StringToID(id), n.IP)
 		return nil
 	}
 
+	rnode = n.getRandomNode(nodes)
+
 	// Asking the first node who's my successor
-	c, err := netutils.ConnectRPC(nodes[0])
+	c, err := netutils.ConnectRPC(rnode + ":8001")
 	if err != nil {
 		return err
 	}
@@ -295,12 +306,12 @@ func (n *Node) JoinNetwork(id string) error {
 	// Todo: find a better way to do this
 	n.next.conn = c
 
-	succ, err := c.FindSuccessor(n.ID)
+	succ, err := c.FindSuccessor(n.id)
 	if err != nil {
 		return err
 	}
 
-	err = n.setSuccessor(succ.ID, succ.IP)
+	err = n.setSuccessor(util.StringToID(succ.ID), succ.IP)
 	if err != nil {
 		return err
 	}

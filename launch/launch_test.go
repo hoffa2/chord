@@ -2,7 +2,6 @@ package launch
 
 import (
 	"fmt"
-	"os"
 	"testing"
 )
 
@@ -22,11 +21,4 @@ func TestGetHosts(t *testing.T) {
 }
 
 func TestLaunchSSH(t *testing.T) {
-	cwd, err := os.Getwd()
-
-	err = runNodes(cwd, "1", "fake")
-	if err != nil {
-		t.Error(err)
-	}
-	
 }
