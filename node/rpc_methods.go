@@ -13,10 +13,11 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	key := util.Identifier(args.ID)
 	var pre comm.NodeID
 	var err error
-
+	fmt.Printf("Node %s pre = %s\n", n.IP, n.prev.IP)
 	if n.prev.conn == nil {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
+		fmt.Printf("Returned %s as pre\n", n.IP)
 		n.nMu.RUnlock()
 		return nil
 	}
@@ -24,6 +25,7 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	if n.id.IsEqual(n.prev.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
+		fmt.Println("Equal?")
 		n.nMu.RUnlock()
 		return nil
 	}
@@ -31,12 +33,22 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	if key.IsBetween(n.id, n.next.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
+		fmt.Printf("i am your pre\n")
 	} else if key.IsLarger(n.next.id) {
 		pre, err = n.next.conn.FindPredecessor(key)
 		reply.ID = pre.ID
 		reply.IP = pre.IP
+		fmt.Printf("after chained call %s\n", pre.IP)
+	} else if key.IsLess(n.id) {
+		pre, err = n.next.conn.FindPredecessor(key)
+		reply.ID = pre.ID
+		reply.IP = pre.IP
+	}
+	if err != nil {
+		return err
 	}
 
+	fmt.Println(reply.IP)
 	n.nMu.RUnlock()
 	return err
 }
@@ -58,12 +70,19 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	if key.InKeySpace(n.prev.id, n.id) {
 		succ.ID = string(n.id)
 		succ.IP = n.IP
+		fmt.Printf("Node %s is in the callee's id space", args.ID)
 	} else if key.IsLess(n.next.id) && key.IsLarger(n.id) {
 		succ.ID = string(n.next.id)
 		succ.IP = n.next.IP
+		fmt.Printf("Node %s is in the callee's successor's id space", args.ID)
 	} else if key.IsLarger(n.id) {
 		fmt.Println("Finding next successor")
 		succ, err = n.next.conn.FindSuccessor(key)
+		fmt.Printf("After find successor nested %s\n", succ.IP)
+	} else {
+		// Should not reach this point
+		n.nMu.RUnlock()
+		return fmt.Errorf("Could not find successor")
 	}
 
 	reply.ID = string(succ.ID)

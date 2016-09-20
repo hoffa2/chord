@@ -32,7 +32,7 @@ func Run(c *cli.Context) error {
 	node := &Node{
 		nameServer:  NameServerAddr,
 		IP:          n,
-		id:          util.StringToID(n),
+		id:          util.StringToID(util.HashValue(n)),
 		objectStore: make(map[string]string),
 		conn:        client,
 	}
