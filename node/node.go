@@ -378,7 +378,7 @@ func JoinNetwork(n *Node, id string) error {
 		return err
 	}
 
-	fmt.Printf("RETURNED %s\n", succ.IP)
+	fmt.Printf("RETURNED %s\n", pre.IP)
 	err = n.next.conn.UpdatePredecessor(n.id, n.IP)
 	if err != nil {
 		return err

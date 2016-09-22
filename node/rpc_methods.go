@@ -30,7 +30,7 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 		return nil
 	}
 
-	if key.IsBetween(n.id, n.next.id) {
+	if key.InKeySpace(n.id, n.next.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
 		fmt.Printf("i am your pre\n")
@@ -71,7 +71,7 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 		succ.ID = string(n.id)
 		succ.IP = n.IP
 		fmt.Printf("Node %s is in the callee's id space", args.ID)
-	} else if key.IsLess(n.next.id) && key.IsLarger(n.id) {
+	} else if key.IsLarger(n.id) && (key.IsLess(n.next.id) || key.IsEqual(n.next.id)) {
 		succ.ID = string(n.next.id)
 		succ.IP = n.next.IP
 		fmt.Printf("Node %s is in the callee's successor's id space", args.ID)

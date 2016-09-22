@@ -47,9 +47,8 @@ func (id Identifier) IsBetween(one, two Identifier) bool {
 
 	// check whether ring wraps around
 	if bytes.Compare(one, two) == -1 {
-		return bytes.Compare(one, id) == -1 ||
-			bytes.Compare(two, id) >= 0
+		return bytes.Compare(one, id) == 1 && (bytes.Compare(two, id) <= 0 || bytes.Compare(two, id) >= 0)
 	}
-	return bytes.Compare(id, one) >= 0 &&
-		bytes.Compare(id, two) == -1
+	return bytes.Compare(id, two) <= 0 &&
+		bytes.Compare(id, one) == 1
 }

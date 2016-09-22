@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/netutils"
 	"github.com/hoffa2/chord/util"
+	"github.com/tylerb/graceful"
 	"github.com/urfave/cli"
 )
 
@@ -48,5 +49,6 @@ func Run(c *cli.Context) error {
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 
-	return http.ListenAndServe(":"+port, r)
+	graceful.Run(":"+port, 0, r)
+	return nil
 }
