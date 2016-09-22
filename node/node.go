@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hoffa2/chord/netutils"
@@ -69,13 +70,13 @@ func readKey(r *http.Request) string {
 func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	// I'm the successor
 	if k.InKeySpace(n.prev.id, n.id) {
-		return Neighbor{id: n.id}, nil
+		return Neighbor{id: n.id, IP: n.IP}, nil
 	}
 	fmt.Printf("Looking for %s on node %s\n", string(k), n.next.IP)
 	// TODO: Maybe we should check whether the key is in our successor's keyspace
 	s, err := n.next.conn.FindSuccessor(k)
 	if err != nil {
-		return Neighbor{}, nil
+		return Neighbor{}, err
 	}
 	fmt.Printf("Found %s's successor: %s\n", string(k), s.IP)
 	return Neighbor{
@@ -84,15 +85,24 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	}, nil
 }
 
+func (n *Node) assertPlacement(key string) {
+	kID := util.StringToID(key)
+	if !kID.InKeySpace(n.prev.id, n.id) {
+		log.Printf("%s should not be located on %s\n", key, n.IP)
+	}
+}
+
 func (n *Node) putValue(key string, body []byte) {
 	n.mu.Lock()
+	n.assertPlacement(key)
+	fmt.Printf("Putting key %s on %s\n", key, n.IP)
 	n.objectStore[key] = string(body)
 	n.mu.Unlock()
 }
 
 func (n *Node) getValue(key string) (string, error) {
-
 	n.mu.RLock()
+	n.assertPlacement(key)
 	val, ok := n.objectStore[key]
 	if !ok {
 		n.mu.RUnlock()
@@ -156,7 +166,7 @@ func (n Node) getFromSuccessor(key string, s Neighbor) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	fmt.Printf("keeeeeeey: %s\n", val)
 	// if we got an unknown node - close connection
 	if close {
 		return val, netutils.CloseRPC(c)
@@ -178,11 +188,10 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 
 	s, err := n.findKeySuccessor(KID)
 	if err != nil {
-		http.Error(w, Internal, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if s.id.IsEqual(n.id) {
-		fmt.Printf("Putting key %s on node %s\n", key, n.IP)
 		n.putValue(key, body)
 	} else {
 		fmt.Printf("sending key %s to %s\n", key, s.IP)
@@ -204,7 +213,7 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 
 	s, err := n.findKeySuccessor(util.StringToID(key))
 	if err != nil {
-		http.Error(w, Internal, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	fmt.Printf("Successor(%s) is %s\n", key, s.IP)
@@ -219,10 +228,10 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		log.Println(err.Error())
-		http.Error(w, Internal, http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Println(val)
 	sendKey(w, val)
 }
 
@@ -296,7 +305,6 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	n.nMu.Lock()
 	if id.IsEqual(n.id) {
-		fmt.Println("I'm alone")
 		n.nMu.Unlock()
 		return nil
 	}
@@ -349,6 +357,7 @@ func JoinNetwork(n *Node, id string) error {
 	if len(nodes) == 1 && nodes[0] == n.IP {
 		// I'm alone!!!
 		n.setSuccessor(util.StringToID(id), n.IP)
+		//go n.reportState()
 		return nil
 	}
 
@@ -393,6 +402,15 @@ func JoinNetwork(n *Node, id string) error {
 	if err != nil {
 		return err
 	}
+	//go n.reportState()
 	fmt.Printf("Node: %s joined network; Pre = %s, Next = %s\n", n.IP, n.prev.IP, n.next.IP)
 	return netutils.CloseRPC(c)
+}
+
+func (n *Node) reportState() {
+	for {
+		time.Sleep(time.Second * 2)
+		log.Printf("State (%s): (%s:%s)\n", n.IP, n.prev.IP, n.next.IP)
+
+	}
 }

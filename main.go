@@ -41,12 +41,8 @@ func main() {
 					Usage: "address of nameserver",
 				},
 				cli.StringFlag{
-					Name:  "pre",
-					Usage: "predecessor of node",
-				},
-				cli.StringFlag{
-					Name:  "succ",
-					Usage: "successor of node",
+					Name:  "id",
+					Usage: "optional id",
 				},
 			},
 		},
@@ -63,6 +59,10 @@ func main() {
 				cli.StringFlag{
 					Name:  "nameserver, ns",
 					Usage: "address of nameserver",
+				},
+				cli.IntFlag{
+					Name:  "tests",
+					Usage: "Number of queries issued",
 				},
 			},
 		},

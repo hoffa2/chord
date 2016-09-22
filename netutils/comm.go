@@ -31,7 +31,6 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 
 // ConnectRPC Instantiates a RPC connections
 func ConnectRPC(host string) (*NodeRPC, error) {
-	fmt.Println(host)
 	conn, err := net.Dial("tcp", host+PORT)
 	if err != nil {
 		return nil, err
@@ -110,7 +109,8 @@ func (n *NodeRPC) GetRemote(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return reply.Key, nil
+
+	return reply.Value, nil
 }
 
 func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {

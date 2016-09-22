@@ -20,7 +20,6 @@ func Run(c *cli.Context) error {
 	NameServerAddr := c.String("nameserver")
 
 	r := mux.NewRouter()
-
 	n, err := os.Hostname()
 	if err != nil {
 		return err

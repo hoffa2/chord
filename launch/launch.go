@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goware/prefixer"
 	"github.com/hoffa2/chord/util"
 	"github.com/kvz/logstreamer"
 	"github.com/urfave/cli"
@@ -51,16 +50,19 @@ func Run(c *cli.Context) error {
 	// run nameserver
 	err = conns.runSSHCommand(nameserver, cwd, RunNameServerCmd)
 	if err != nil {
+		conns.CloseConnections()
 		return err
 	}
 
 	err = conns.runNodes(cwd, numhosts, nameserver)
 	if err != nil {
+		conns.CloseConnections()
 		return err
 	}
-
+	fmt.Println("Running client")
 	conns.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", nameserver))
 	if err != nil {
+		conns.CloseConnections()
 		return err
 	}
 
@@ -100,11 +102,14 @@ func (c *Connection) runCommand(command string, args ...string) error {
 		process: command,
 	}
 
-	prefixReader := prefixer.New(&sshconn.out, "Localhost")
-	cmd.Stdout = &sshconn.out
-	prefixReader.WriteTo(os.Stdout)
-	cmd.Stdin = &sshconn.inn
+	logger := log.New(os.Stdout, "localhost"+" -->", log.Lmicroseconds)
 
+	logStreamerOut := logstreamer.NewLogstreamer(logger, "stdout", false)
+	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
+
+	cmd.Stdout = logStreamerOut
+	cmd.Stdin = &sshconn.inn
+	cmd.Stderr = logStreamerErr
 	c.conns = append(c.conns, sshconn)
 	err := cmd.Start()
 	if err != nil {
@@ -118,7 +123,7 @@ func (c *Connection) runSSHCommand(host, cwd, command string) error {
 	log.Printf("Running %s on %s\n", command, host)
 	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
 
-	logger := log.New(os.Stdout, host+" -->", log.Ldate|log.Ltime)
+	logger := log.New(os.Stdout, host+" -->", log.Lmicroseconds)
 
 	logStreamerOut := logstreamer.NewLogstreamer(logger, "stdout", false)
 	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
@@ -148,9 +153,9 @@ func (c *Connection) runNodes(cwd, numhosts, nameserver string) error {
 		return err
 	}
 
-	nodecmd := fmt.Sprintf(RunNodeCmd, nameserver)
 	log.Printf("Running %s nodes\n", numhosts)
 	for _, host := range hosts {
+		nodecmd := fmt.Sprintf(RunNodeCmd, nameserver)
 		time.Sleep(1 * time.Second)
 		err = c.runSSHCommand(host, cwd, nodecmd)
 		if err != nil {

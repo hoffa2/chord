@@ -1,6 +1,9 @@
 package util
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 type Identifier []byte
 
@@ -35,12 +38,12 @@ func StringToID(str string) Identifier {
 func (id Identifier) InKeySpace(one, two Identifier) bool {
 
 	// check whether ring wraps around
-	if bytes.Compare(one, two) == -1 {
-		return bytes.Compare(one, id) == -1 ||
-			bytes.Compare(two, id) >= 0
+	if bytes.Compare(one, two) == 1 {
+		fmt.Printf("%d:%d\n", bytes.Compare(one, id) == -1, bytes.Compare(two, id))
+		return bytes.Compare(one, id) == -1 || bytes.Compare(two, id) >= 0
 	}
-	return bytes.Compare(id, one) >= 0 &&
-		bytes.Compare(id, two) == -1
+	return bytes.Compare(one, id) == -1 &&
+		bytes.Compare(two, id) >= 0
 }
 
 func (id Identifier) IsBetween(one, two Identifier) bool {

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -9,22 +8,29 @@ import (
 	"github.com/urfave/cli"
 )
 
+var deftests = 1000
+
 func Run(c *cli.Context) error {
-	port := c.String("port")
-	if port == "" {
-		port = "8000"
+	tests := c.Int("tests")
+	if tests == 0 {
+		tests = deftests
 	}
 
 	nameServerAddr := c.String("nameserver")
 	log.Printf("Address of nameserver: %s\n", nameServerAddr)
-	client := &Client{nameServer: nameServerAddr}
-	time.Sleep(time.Second * 4)
-	ips, err := netutils.GetNodeIPs(nameServerAddr + ":" + "8000")
+
+	client := &Client{
+		nameServer: nameServerAddr,
+		results:    make(chan time.Duration, tests*2),
+		nkeys:      tests,
+		keyvalues:  make(map[string]string),
+	}
+
+	time.Sleep(time.Second * 10)
+	ips, err := netutils.GetNodeIPs(nameServerAddr + ":" + "8030")
 	if err != nil {
 		return err
 	}
-	client.RunTests()
-	fmt.Println(ips)
-
-	return nil
+	client.IPs = ips
+	return client.RunTests()
 }

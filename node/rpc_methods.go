@@ -34,12 +34,12 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
 		fmt.Printf("i am your pre\n")
-	} else if key.IsLarger(n.next.id) {
+	} else if key.InKeySpace(n.prev.id, n.id) {
 		pre, err = n.next.conn.FindPredecessor(key)
 		reply.ID = pre.ID
 		reply.IP = pre.IP
 		fmt.Printf("after chained call %s\n", pre.IP)
-	} else if key.IsLess(n.id) {
+	} else {
 		pre, err = n.next.conn.FindPredecessor(key)
 		reply.ID = pre.ID
 		reply.IP = pre.IP
@@ -60,26 +60,28 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	var succ comm.NodeID
 	var err error
 	// If node is the only one in the ring
-	if n.id.IsEqual(n.next.id) {
+	if n.next.conn == nil {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
 		n.nMu.RUnlock()
 		return nil
 	}
-
+	fmt.Printf("Key: %s\n", key)
 	if key.InKeySpace(n.prev.id, n.id) {
 		succ.ID = string(n.id)
 		succ.IP = n.IP
 		fmt.Printf("Node %s is in the callee's id space", args.ID)
-	} else if key.IsLarger(n.id) && (key.IsLess(n.next.id) || key.IsEqual(n.next.id)) {
+	} else if key.InKeySpace(n.id, n.next.id) {
 		succ.ID = string(n.next.id)
 		succ.IP = n.next.IP
 		fmt.Printf("Node %s is in the callee's successor's id space", args.ID)
-	} else if key.IsLarger(n.id) {
+	} else if key.IsLarger(n.id) || key.IsLess(n.id) {
 		fmt.Println("Finding next successor")
 		succ, err = n.next.conn.FindSuccessor(key)
 		fmt.Printf("After find successor nested %s\n", succ.IP)
 	} else {
+		fmt.Printf("%s:%s\n", string(n.id), string(n.prev.id))
+		fmt.Printf("Could not find succ(%s) on node %s\n", args.ID, n.IP)
 		// Should not reach this point
 		n.nMu.RUnlock()
 		return fmt.Errorf("Could not find successor")
