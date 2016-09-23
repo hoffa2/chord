@@ -1,6 +1,9 @@
 package util
 
-import "bytes"
+import (
+	"bytes"
+	"math/big"
+)
 
 type Identifier []byte
 
@@ -50,4 +53,31 @@ func (id Identifier) IsBetween(one, two Identifier) bool {
 	}
 	return bytes.Compare(id, two) <= 0 &&
 		bytes.Compare(id, one) == 1
+}
+
+func (id Identifier) Add(id2 Identifier) Identifier {
+	res := make(Identifier, len(id))
+	for i, _ := range res {
+		res[i] = id[i] + id2[i]
+	}
+	return res
+}
+
+func Mod(id1, id2 Identifier) Identifier {
+	var one big.Int
+	var two big.Int
+	var res big.Int
+	one.SetBytes(id1)
+	two.SetBytes(id2)
+
+	res.Mod(&one, &two)
+	return res.Bytes()
+}
+
+func (id Identifier) CalculateStart(k, m int64) Identifier {
+	msquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(m), nil)
+	ksquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(k-1), nil)
+	left := new(big.Int).Add(big.NewInt(0).SetBytes(id), ksquared)
+	start := new(big.Int).Mod(left, msquared)
+	return start.Bytes()
 }

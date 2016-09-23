@@ -26,6 +26,9 @@ const (
 )
 
 var (
+	// Keysize size of keyspace
+	KeySize         = 160
+	ErrInvalidIndex = errors.New("ftable index is invalid")
 	// ErrNotFound if key does not exist
 	ErrNotFound = errors.New("No value on key")
 	// ErrNextToSmall if the successor is too small
@@ -54,7 +57,7 @@ type Node struct {
 	// IP Address of nameserver
 	nameServer string
 	conn       http.Client
-	finger     []FingerEntry
+	fingers    []FingerEntry
 	// Successor of node
 	next Neighbor
 	// Predecessor of node
@@ -398,4 +401,23 @@ func (n *Node) reportState() {
 		log.Printf("State (%s): (%s:%s)\n", n.IP, n.prev.IP, n.next.IP)
 
 	}
+}
+
+func (n *Node) initFTable() {
+	for i := 1; i < KeySize; i++ {
+		n.fingers[i-1].start = n.id.CalculateStart(int64(i), int64(KeySize))
+	}
+
+}
+
+func (n *Node) updateFTable(id, ip string, idx int) error {
+	if idx >= KeySize {
+		return ErrInvalidIndex
+	}
+	n.nMu.Lock()
+	n.fingers[idx].ip = ip
+	n.fingers[idx].succ = util.StringToID(id)
+	n.nMu.Unlock()
+
+	return nil
 }

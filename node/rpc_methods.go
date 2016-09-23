@@ -69,8 +69,6 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	} else if key.IsLarger(n.id) || key.IsLess(n.id) {
 		succ, err = n.next.FindSuccessor(key)
 	} else {
-		fmt.Printf("%s:%s\n", string(n.id), string(n.prev.id))
-		fmt.Printf("Could not find succ(%s) on node %s\n", args.ID, n.IP)
 		// Should not reach this point
 		n.nMu.RUnlock()
 		return fmt.Errorf("Could not find successor")
@@ -126,4 +124,9 @@ func (n *Node) UpdateSuccessor(args *comm.NodeID, reply *comm.Empty) error {
 func (n *Node) Init(args *comm.Args, reply *comm.NodeID) error {
 	reply.ID = args.ID
 	return nil
+}
+
+// UpdateFingerTable Updates n's fingertable's i'th entry
+func (n *Node) UpdateFingerTable(args *comm.FingerEntry, reply *comm.Empty) error {
+	return n.updateFTable(args.S.ID, args.S.IP, args.IDX)
 }

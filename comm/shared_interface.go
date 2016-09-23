@@ -9,4 +9,5 @@ type NodeComm interface {
 	UpdatePredecessor(args *NodeID, reply *Empty) error
 	UpdateSuccessor(args *NodeID, reply *Empty) error
 	Init(args *Args, reply *NodeID) error
+	UpdateFingerTable(args *FingerEntry, reply *Empty) error
 }

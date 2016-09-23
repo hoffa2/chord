@@ -6,6 +6,12 @@ type Args struct {
 	ID string
 }
 
+// FingerEntry
+type FingerEntry struct {
+	S   NodeID
+	IDX int
+}
+
 // KeyValue Arguments used in
 // RPC calls involving remote get/put operations
 type KeyValue struct {

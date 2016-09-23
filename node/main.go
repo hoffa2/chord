@@ -35,6 +35,7 @@ func Run(c *cli.Context) error {
 		id:          util.StringToID(util.HashValue(n)),
 		objectStore: make(map[string]string),
 		conn:        client,
+		fingers:     make([]FingerEntry, KeySize),
 	}
 	l, err := netutils.SetupRPCServer("8010", node)
 	if err != nil {
