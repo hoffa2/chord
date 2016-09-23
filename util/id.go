@@ -1,9 +1,6 @@
 package util
 
-import (
-	"bytes"
-	"fmt"
-)
+import "bytes"
 
 type Identifier []byte
 
@@ -39,7 +36,6 @@ func (id Identifier) InKeySpace(one, two Identifier) bool {
 
 	// check whether ring wraps around
 	if bytes.Compare(one, two) == 1 {
-		fmt.Printf("%d:%d\n", bytes.Compare(one, id) == -1, bytes.Compare(two, id))
 		return bytes.Compare(one, id) == -1 || bytes.Compare(two, id) >= 0
 	}
 	return bytes.Compare(one, id) == -1 &&

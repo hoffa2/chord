@@ -12,6 +12,7 @@ import (
 	"github.com/urfave/cli"
 )
 
+// Run Runs a chord node
 func Run(c *cli.Context) error {
 	port := c.String("port")
 	if port == "" {
@@ -28,7 +29,6 @@ func Run(c *cli.Context) error {
 	client := http.Client{
 		Timeout: time.Duration(time.Second * 2),
 	}
-
 	node := &Node{
 		nameServer:  NameServerAddr,
 		IP:          n,
@@ -36,8 +36,11 @@ func Run(c *cli.Context) error {
 		objectStore: make(map[string]string),
 		conn:        client,
 	}
-
-	go netutils.SetupRPCServer("8001", node)
+	l, err := netutils.SetupRPCServer("8010", node)
+	if err != nil {
+		return err
+	}
+	defer l.Close()
 
 	err = JoinNetwork(node, n)
 	if err != nil {
@@ -48,6 +51,6 @@ func Run(c *cli.Context) error {
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 
-	graceful.Run(":"+port, 0, r)
+	graceful.Run(":"+port, time.Microsecond*100, r)
 	return nil
 }

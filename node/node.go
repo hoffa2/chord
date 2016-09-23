@@ -26,6 +26,7 @@ const (
 )
 
 var (
+	// ErrNotFound if key does not exist
 	ErrNotFound = errors.New("No value on key")
 	// ErrNextToSmall if the successor is too small
 	ErrNextToSmall = errors.New("Successor is less than n id")
@@ -35,9 +36,9 @@ var (
 
 // Neighbor Describing an adjacent node in the ring
 type Neighbor struct {
-	id   util.Identifier
-	conn *netutils.NodeRPC
-	IP   string
+	id util.Identifier
+	*netutils.NodeRPC
+	IP string
 }
 
 // Node Interface struct that represents the state
@@ -72,13 +73,11 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 	if k.InKeySpace(n.prev.id, n.id) {
 		return Neighbor{id: n.id, IP: n.IP}, nil
 	}
-	fmt.Printf("Looking for %s on node %s\n", string(k), n.next.IP)
 	// TODO: Maybe we should check whether the key is in our successor's keyspace
-	s, err := n.next.conn.FindSuccessor(k)
+	s, err := n.next.FindSuccessor(k)
 	if err != nil {
 		return Neighbor{}, err
 	}
-	fmt.Printf("Found %s's successor: %s\n", string(k), s.IP)
 	return Neighbor{
 		id: util.StringToID(s.ID),
 		IP: s.IP,
@@ -86,8 +85,8 @@ func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
 }
 
 func (n *Node) assertPlacement(key string) {
-	kID := util.StringToID(key)
-	if !kID.InKeySpace(n.prev.id, n.id) {
+	k := util.StringToID(key)
+	if !k.InKeySpace(n.prev.id, n.id) {
 		log.Printf("%s should not be located on %s\n", key, n.IP)
 	}
 }
@@ -95,7 +94,6 @@ func (n *Node) assertPlacement(key string) {
 func (n *Node) putValue(key string, body []byte) {
 	n.mu.Lock()
 	n.assertPlacement(key)
-	fmt.Printf("Putting key %s on %s\n", key, n.IP)
 	n.objectStore[key] = string(body)
 	n.mu.Unlock()
 }
@@ -114,9 +112,9 @@ func (n *Node) getValue(key string) (string, error) {
 
 func (n Node) findExistingConn(id util.Identifier) *netutils.NodeRPC {
 	if id.IsEqual(n.next.id) {
-		return n.next.conn
+		return n.next.NodeRPC
 	} else if id.IsEqual(n.prev.id) {
-		return n.prev.conn
+		return n.prev.NodeRPC
 	}
 	return nil
 }
@@ -166,7 +164,6 @@ func (n Node) getFromSuccessor(key string, s Neighbor) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Printf("keeeeeeey: %s\n", val)
 	// if we got an unknown node - close connection
 	if close {
 		return val, netutils.CloseRPC(c)
@@ -194,7 +191,6 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	if s.id.IsEqual(n.id) {
 		n.putValue(key, body)
 	} else {
-		fmt.Printf("sending key %s to %s\n", key, s.IP)
 		err = n.sendToSuccessor(key, string(body), s)
 		if err != nil {
 			// TODO: Notify the actual error in some way
@@ -216,11 +212,9 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Successor(%s) is %s\n", key, s.IP)
 	if s.id.IsEqual(n.id) {
 		val, err = n.getValue(key)
 	} else {
-		fmt.Printf("Getting key %s from %s\n", key, s.IP)
 		val, err = n.getFromSuccessor(key, s)
 	}
 	if err == ErrNotFound {
@@ -231,7 +225,6 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(val)
 	sendKey(w, val)
 }
 
@@ -250,7 +243,6 @@ func (n Node) registerNode() error {
 
 	resp, err := n.conn.PostForm(fmt.Sprintf("http://%s/", n.nameServer), url.Values{"ip": {hostname}})
 	if err != nil {
-		log.Println("error when connectiong to nameserver")
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
@@ -263,8 +255,8 @@ func (n *Node) unlinkNext() error {
 	if n.next.id.IsEqual(n.id) {
 		return nil
 	}
-	if n.next.conn != nil {
-		return netutils.CloseRPC(n.next.conn)
+	if n.next.NodeRPC != nil {
+		return netutils.CloseRPC(n.next.NodeRPC)
 	}
 	return nil
 }
@@ -273,8 +265,8 @@ func (n *Node) unlinkPrev() error {
 	if n.prev.id.IsEqual(n.id) {
 		return nil
 	}
-	if n.prev.conn != nil {
-		return netutils.CloseRPC(n.prev.conn)
+	if n.prev.NodeRPC != nil {
+		return netutils.CloseRPC(n.prev.NodeRPC)
 	}
 	return nil
 }
@@ -293,11 +285,10 @@ func (n *Node) setPredecessor(id util.Identifier, ip string) error {
 	}
 
 	n.prev = Neighbor{
-		id:   id,
-		IP:   ip,
-		conn: c,
+		id:      id,
+		IP:      ip,
+		NodeRPC: c,
 	}
-	fmt.Printf("Node %s updated pre to %s\n", n.IP, ip)
 	n.nMu.Unlock()
 	return nil
 }
@@ -321,12 +312,11 @@ func (n *Node) setSuccessor(id util.Identifier, ip string) error {
 	}
 
 	n.next = Neighbor{
-		id:   id,
-		IP:   ip,
-		conn: c,
+		id:      id,
+		IP:      ip,
+		NodeRPC: c,
 	}
 
-	fmt.Printf("Node %s updated next to %s\n", n.IP, ip)
 	n.nMu.Unlock()
 	return nil
 }
@@ -356,7 +346,7 @@ func JoinNetwork(n *Node, id string) error {
 
 	if len(nodes) == 1 && nodes[0] == n.IP {
 		// I'm alone!!!
-		n.setSuccessor(util.StringToID(id), n.IP)
+		n.setSuccessor(n.id, n.IP)
 		//go n.reportState()
 		return nil
 	}
@@ -369,26 +359,22 @@ func JoinNetwork(n *Node, id string) error {
 		return err
 	}
 
-	fmt.Printf("%s asks %s\n", n.IP, rnode)
 	succ, err := c.FindSuccessor(n.id)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("REturned %s\n", succ.IP)
 	err = n.setSuccessor(util.StringToID(succ.ID), succ.IP)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s asks %s\n", n.IP, n.next.IP)
-	pre, err := n.next.conn.FindPredecessor(n.id)
+	pre, err := n.next.FindPredecessor(n.id)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("RETURNED %s\n", pre.IP)
-	err = n.next.conn.UpdatePredecessor(n.id, n.IP)
+	err = n.next.UpdatePredecessor(n.id, n.IP)
 	if err != nil {
 		return err
 	}
@@ -398,12 +384,11 @@ func JoinNetwork(n *Node, id string) error {
 		return err
 	}
 
-	err = n.prev.conn.UpdateSuccessor(n.id, n.IP)
+	err = n.prev.UpdateSuccessor(n.id, n.IP)
 	if err != nil {
 		return err
 	}
-	//go n.reportState()
-	fmt.Printf("Node: %s joined network; Pre = %s, Next = %s\n", n.IP, n.prev.IP, n.next.IP)
+	fmt.Printf("Node joined. (%s <- %s -> %s)\n", n.prev.IP, n.IP, n.next.IP)
 	return netutils.CloseRPC(c)
 }
 

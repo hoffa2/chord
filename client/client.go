@@ -80,7 +80,7 @@ func (c *Client) getKey(key, nodeip string) error {
 
 func (c *Client) RunTests() error {
 	for i := 0; i < c.nkeys; i++ {
-		c.keyvalues[strconv.Itoa(i)] = strconv.Itoa(i)
+		c.keyvalues[strconv.Itoa(i*100)] = strconv.Itoa(i * 100)
 	}
 
 	start := time.Now()

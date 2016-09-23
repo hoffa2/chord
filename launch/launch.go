@@ -45,6 +45,9 @@ func Run(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	ch := make(chan os.Signal, 2)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(ch, os.Interrupt, syscall.SIGINT)
 
 	conns := new(Connection)
 	// run nameserver
@@ -65,11 +68,6 @@ func Run(c *cli.Context) error {
 		conns.CloseConnections()
 		return err
 	}
-
-	ch := make(chan os.Signal, 2)
-	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
-	signal.Notify(ch, os.Interrupt, syscall.SIGINT)
-
 	// wait for termination signal
 	<-ch
 	conns.CloseConnections()
@@ -123,9 +121,9 @@ func (c *Connection) runSSHCommand(host, cwd, command string) error {
 	log.Printf("Running %s on %s\n", command, host)
 	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
 
-	logger := log.New(os.Stdout, host+" -->", log.Lmicroseconds)
+	logger := log.New(os.Stdout, "\x1b[32m"+host+"\x1b[0m"+" --> ", 0)
 
-	logStreamerOut := logstreamer.NewLogstreamer(logger, "stdout", false)
+	logStreamerOut := logstreamer.NewLogstreamer(logger, " ", false)
 	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
 
 	sshconn := &SSHConn{

@@ -13,11 +13,10 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	key := util.Identifier(args.ID)
 	var pre comm.NodeID
 	var err error
-	fmt.Printf("Node %s pre = %s\n", n.IP, n.prev.IP)
-	if n.prev.conn == nil {
+
+	if n.prev.NodeRPC == nil {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
-		fmt.Printf("Returned %s as pre\n", n.IP)
 		n.nMu.RUnlock()
 		return nil
 	}
@@ -25,7 +24,6 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	if n.id.IsEqual(n.prev.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
-		fmt.Println("Equal?")
 		n.nMu.RUnlock()
 		return nil
 	}
@@ -33,14 +31,11 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	if key.InKeySpace(n.id, n.next.id) {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
-		fmt.Printf("i am your pre\n")
 	} else if key.InKeySpace(n.prev.id, n.id) {
-		pre, err = n.next.conn.FindPredecessor(key)
-		reply.ID = pre.ID
-		reply.IP = pre.IP
-		fmt.Printf("after chained call %s\n", pre.IP)
+		reply.ID = string(n.prev.id)
+		reply.IP = n.prev.IP
 	} else {
-		pre, err = n.next.conn.FindPredecessor(key)
+		pre, err = n.next.FindPredecessor(key)
 		reply.ID = pre.ID
 		reply.IP = pre.IP
 	}
@@ -48,7 +43,6 @@ func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 		return err
 	}
 
-	fmt.Println(reply.IP)
 	n.nMu.RUnlock()
 	return err
 }
@@ -60,25 +54,20 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 	var succ comm.NodeID
 	var err error
 	// If node is the only one in the ring
-	if n.next.conn == nil {
+	if n.next.NodeRPC == nil {
 		reply.ID = string(n.id)
 		reply.IP = n.IP
 		n.nMu.RUnlock()
 		return nil
 	}
-	fmt.Printf("Key: %s\n", key)
 	if key.InKeySpace(n.prev.id, n.id) {
 		succ.ID = string(n.id)
 		succ.IP = n.IP
-		fmt.Printf("Node %s is in the callee's id space", args.ID)
 	} else if key.InKeySpace(n.id, n.next.id) {
 		succ.ID = string(n.next.id)
 		succ.IP = n.next.IP
-		fmt.Printf("Node %s is in the callee's successor's id space", args.ID)
 	} else if key.IsLarger(n.id) || key.IsLess(n.id) {
-		fmt.Println("Finding next successor")
-		succ, err = n.next.conn.FindSuccessor(key)
-		fmt.Printf("After find successor nested %s\n", succ.IP)
+		succ, err = n.next.FindSuccessor(key)
 	} else {
 		fmt.Printf("%s:%s\n", string(n.id), string(n.prev.id))
 		fmt.Printf("Could not find succ(%s) on node %s\n", args.ID, n.IP)
@@ -89,7 +78,6 @@ func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
 
 	reply.ID = string(succ.ID)
 	reply.IP = succ.IP
-	fmt.Printf("Node %s returned %s as succ(%s)\n", n.IP, succ.IP, args.ID)
 	n.nMu.RUnlock()
 	return err
 }
@@ -134,6 +122,7 @@ func (n *Node) UpdateSuccessor(args *comm.NodeID, reply *comm.Empty) error {
 	return nil
 }
 
+// Init convenience function to assert successful RPC init
 func (n *Node) Init(args *comm.Args, reply *comm.NodeID) error {
 	reply.ID = args.ID
 	return nil

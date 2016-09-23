@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/rpc"
+	"sync"
 	"time"
 
 	"github.com/hoffa2/chord/comm"
@@ -15,10 +16,12 @@ import (
 
 type NodeRPC struct {
 	client *rpc.Client
+	host   string
+	sync.Mutex
 }
 
 var (
-	PORT = ":8001"
+	PORT = ":8010"
 )
 
 func RegisterNewType(t interface{}) {
@@ -46,8 +49,15 @@ func ConnectRPC(host string) (*NodeRPC, error) {
 		client.Close()
 		return nil, fmt.Errorf("Init failed")
 	}
-	nCom := &NodeRPC{client: client}
+	nCom := &NodeRPC{client: client, host: host + PORT}
 	return nCom, nil
+}
+
+func (c *NodeRPC) reDial() error {
+	err := c.client.Close()
+	conn, err := net.Dial("tcp", c.host)
+	c.client = rpc.NewClient(conn)
+	return err
 }
 
 func CloseRPC(c *NodeRPC) error {
@@ -55,7 +65,7 @@ func CloseRPC(c *NodeRPC) error {
 }
 
 // SetupRPCServer Instantiates a RPC Server
-func SetupRPCServer(port string, api comm.NodeComm) error {
+func SetupRPCServer(port string, api comm.NodeComm) (net.Listener, error) {
 	s := rpc.NewServer()
 
 	registerCommAPI(s, api)
@@ -64,17 +74,17 @@ func SetupRPCServer(port string, api comm.NodeComm) error {
 	// all traffic; Not just localhost
 	l, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	go s.Accept(l)
-	return nil
+	return l, nil
 }
 
 func (n *NodeRPC) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 	//args := &comm.NodeID{ID: []byte(id)}
 	var reply comm.NodeID
-	err := n.client.Call("NodeComm.FindSuccessor", &comm.Args{ID: string(id)}, &reply)
+	err := n.Call("NodeComm.FindSuccessor", &comm.Args{ID: string(id)}, &reply)
 	if err != nil {
 		return comm.NodeID{}, err
 	}
@@ -84,7 +94,7 @@ func (n *NodeRPC) FindSuccessor(id util.Identifier) (comm.NodeID, error) {
 func (n *NodeRPC) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
 	args := &comm.NodeID{ID: string(id)}
 	var reply comm.NodeID
-	err := n.client.Call("NodeComm.FindPredecessor", args, &reply)
+	err := n.Call("NodeComm.FindPredecessor", args, &reply)
 	if err != nil {
 		return comm.NodeID{}, err
 	}
@@ -94,7 +104,7 @@ func (n *NodeRPC) FindPredecessor(id util.Identifier) (comm.NodeID, error) {
 // PutRemote Stores a value in its respective node
 func (n *NodeRPC) PutRemote(key, value string) error {
 	args := &comm.KeyValue{Key: key, Value: value}
-	err := n.client.Call("NodeComm.PutRemote", args, nil)
+	err := n.Call("NodeComm.PutRemote", args, nil)
 	if err != nil {
 		return err
 	}
@@ -105,7 +115,7 @@ func (n *NodeRPC) PutRemote(key, value string) error {
 func (n *NodeRPC) GetRemote(key string) (string, error) {
 	args := &comm.KeyValue{Key: key}
 	reply := comm.KeyValue{}
-	err := n.client.Call("NodeComm.GetRemote", args, &reply)
+	err := n.Call("NodeComm.GetRemote", args, &reply)
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +125,7 @@ func (n *NodeRPC) GetRemote(key string) (string, error) {
 
 func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
 	args := &comm.NodeID{ID: string(id), IP: ip}
-	err := n.client.Call("NodeComm.UpdatePredecessor", args, nil)
+	err := n.Call("NodeComm.UpdatePredecessor", args, nil)
 	if err != nil {
 		return err
 	}
@@ -124,7 +134,7 @@ func (n *NodeRPC) UpdatePredecessor(id util.Identifier, ip string) error {
 
 func (n *NodeRPC) UpdateSuccessor(id util.Identifier, ip string) error {
 	args := &comm.NodeID{ID: string(id), IP: ip}
-	err := n.client.Call("NodeComm.UpdateSuccessor", args, nil)
+	err := n.Call("NodeComm.UpdateSuccessor", args, nil)
 	if err != nil {
 		return err
 	}
@@ -153,4 +163,20 @@ func GetNodeIPs(address string) ([]string, error) {
 		return nil, err
 	}
 	return list, nil
+}
+
+func (c *NodeRPC) Call(method string, args interface{}, reply interface{}) error {
+	err := c.client.Call(method, args, reply)
+	if err == rpc.ErrShutdown {
+		c.Mutex.Lock()
+		err = c.reDial()
+		c.Mutex.Unlock()
+		if err != nil {
+			return err
+		}
+		return c.client.Call(method, args, reply)
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
