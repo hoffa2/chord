@@ -1,241 +1,36 @@
 package node
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/netutils"
 	"github.com/hoffa2/chord/util"
 )
-
-const (
-	// NoValue if a put request does not have a body
-	NoValue = "No value in body"
-	// NotFound If key cannot be found
-
-	// Internal Internal error
-	Internal = "Internal error: "
-)
-
-var (
-	// Keysize size of keyspace
-	KeySize         = 160
-	ErrInvalidIndex = errors.New("ftable index is invalid")
-	// ErrNotFound if key does not exist
-	ErrNotFound = errors.New("No value on key")
-	// ErrNextToSmall if the successor is too small
-	ErrNextToSmall = errors.New("Successor is less than n id")
-	// ErrPrevToLarge If the predecessor is too large
-	ErrPrevToLarge = errors.New("Predecessor is larger than n id")
-)
-
-// Neighbor Describing an adjacent node in the ring
-type Neighbor struct {
-	id util.Identifier
-	*netutils.NodeRPC
-	IP string
-}
-
-// Node Interface struct that represents the state
-// of one node
-type Node struct {
-	// Storing key-value pairs on the respective node
-	mu  sync.RWMutex
-	nMu sync.RWMutex
-	//
-	objectStore map[string]string
-	// Node Identifier
-	id util.Identifier
-	// IP Address of nameserver
-	nameServer string
-	conn       http.Client
-	fingers    []FingerEntry
-	// Successor of node
-	next Neighbor
-	// Predecessor of node
-	prev Neighbor
-	// Node IP
-	IP string
-}
 
 func readKey(r *http.Request) string {
 	vars := mux.Vars(r)
 	return vars["key"]
 }
 
-func (n Node) findKeySuccessor(k util.Identifier) (Neighbor, error) {
+func (n Node) findKeySuccessor(k util.Identifier) (*comm.Rnode, error) {
 	// I'm the successor
-	if k.InKeySpace(n.prev.id, n.id) {
-		return Neighbor{id: n.id, IP: n.IP}, nil
+	if k.InKeySpace(n.prev.ID, n.ID) {
+		return n.Rnode, nil
 	}
 	// TODO: Maybe we should check whether the key is in our successor's keyspace
-	s, err := n.next.FindSuccessor(k)
+	s, err := n.remote.FindSuccessor(*n.fingers[0].node, k)
 	if err != nil {
-		return Neighbor{}, err
+		return nil, err
 	}
-	return Neighbor{
-		id: util.StringToID(s.ID),
-		IP: s.IP,
-	}, nil
-}
-
-func (n *Node) assertPlacement(key string) {
-	k := util.StringToID(key)
-	if !k.InKeySpace(n.prev.id, n.id) {
-		log.Printf("%s should not be located on %s\n", key, n.IP)
-	}
-}
-
-func (n *Node) putValue(key string, body []byte) {
-	n.mu.Lock()
-	n.assertPlacement(key)
-	n.objectStore[key] = string(body)
-	n.mu.Unlock()
-}
-
-func (n *Node) getValue(key string) (string, error) {
-	n.mu.RLock()
-	n.assertPlacement(key)
-	val, ok := n.objectStore[key]
-	if !ok {
-		n.mu.RUnlock()
-		return "", ErrNotFound
-	}
-	n.mu.RUnlock()
-	return val, nil
-}
-
-func (n Node) findExistingConn(id util.Identifier) *netutils.NodeRPC {
-	if id.IsEqual(n.next.id) {
-		return n.next.NodeRPC
-	} else if id.IsEqual(n.prev.id) {
-		return n.prev.NodeRPC
-	}
-	return nil
-}
-
-func (n Node) sendToSuccessor(key, val string, s Neighbor) error {
-	var err error
-	close := false
-	c := n.findExistingConn(s.id)
-
-	// if we got an unfamiliar node
-	if c == nil {
-		c, err = netutils.ConnectRPC(s.IP)
-		if err != nil {
-			return err
-		}
-		close = true
-	}
-
-	err = c.PutRemote(key, val)
-	if err != nil {
-		return err
-	}
-
-	// if we got an unknown node - close connection
-	if close {
-		return netutils.CloseRPC(c)
-	}
-
-	return nil
-}
-
-func (n Node) getFromSuccessor(key string, s Neighbor) (string, error) {
-	var err error
-	close := false
-	c := n.findExistingConn(s.id)
-
-	// if we got an unfamiliar node
-	if c == nil {
-		c, err = netutils.ConnectRPC(s.IP)
-		if err != nil {
-			return "", err
-		}
-		close = true
-	}
-
-	val, err := c.GetRemote(key)
-	if err != nil {
-		return "", err
-	}
-	// if we got an unknown node - close connection
-	if close {
-		return val, netutils.CloseRPC(c)
-	}
-
-	return val, nil
-}
-
-func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, NoValue, http.StatusBadRequest)
-		return
-	}
-
-	key := readKey(r)
-
-	KID := util.StringToID(key)
-
-	s, err := n.findKeySuccessor(KID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if s.id.IsEqual(n.id) {
-		n.putValue(key, body)
-	} else {
-		err = n.sendToSuccessor(key, string(body), s)
-		if err != nil {
-			// TODO: Notify the actual error in some way
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
-	var val string
-	var err error
-	key := readKey(r)
-
-	s, err := n.findKeySuccessor(util.StringToID(key))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if s.id.IsEqual(n.id) {
-		val, err = n.getValue(key)
-	} else {
-		val, err = n.getFromSuccessor(key, s)
-	}
-	if err == ErrNotFound {
-		util.ErrorNotFound(w, "Key %s not found", key)
-		return
-	} else if err != nil {
-		log.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	sendKey(w, val)
-}
-
-// Just writes the response - may need to add more
-// header later. But, for now ResponseWriter
-// handles everything
-func sendKey(w http.ResponseWriter, key string) {
-	w.Write([]byte(key))
+	return s, nil
 }
 
 func (n Node) registerNode() error {
@@ -244,82 +39,28 @@ func (n Node) registerNode() error {
 		return err
 	}
 
-	resp, err := n.conn.PostForm(fmt.Sprintf("http://%s/", n.nameServer), url.Values{"ip": {hostname}})
+	resp, err := n.conn.PostForm(fmt.Sprintf("http://%s/", n.nameServer),
+		url.Values{"ip": {hostname}})
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Error: %d; Could not register with nameserver: %s", resp.StatusCode, n.nameServer)
+		return fmt.Errorf("Error: %d; Could not register with nameserver: %s",
+			resp.StatusCode, n.nameServer)
 	}
 	return nil
 }
 
-func (n *Node) unlinkNext() error {
-	if n.next.id.IsEqual(n.id) {
-		return nil
-	}
-	if n.next.NodeRPC != nil {
-		return netutils.CloseRPC(n.next.NodeRPC)
-	}
-	return nil
-}
-
-func (n *Node) unlinkPrev() error {
-	if n.prev.id.IsEqual(n.id) {
-		return nil
-	}
-	if n.prev.NodeRPC != nil {
-		return netutils.CloseRPC(n.prev.NodeRPC)
-	}
-	return nil
-}
-func (n *Node) setPredecessor(id util.Identifier, ip string) error {
+func (n *Node) setPredecessor(rn *comm.Rnode) error {
 	n.nMu.Lock()
-	c, err := netutils.ConnectRPC(ip)
-	if err != nil {
-		n.nMu.Unlock()
-		return err
-	}
-
-	err = n.unlinkPrev()
-	if err != nil {
-		n.nMu.Unlock()
-		return err
-	}
-
-	n.prev = Neighbor{
-		id:      id,
-		IP:      ip,
-		NodeRPC: c,
-	}
+	n.prev = rn
 	n.nMu.Unlock()
 	return nil
 }
 
-func (n *Node) setSuccessor(id util.Identifier, ip string) error {
+func (n *Node) setSuccessor(rn *comm.Rnode) error {
 	n.nMu.Lock()
-	if id.IsEqual(n.id) {
-		n.nMu.Unlock()
-		return nil
-	}
-
-	c, err := netutils.ConnectRPC(ip)
-	if err != nil {
-		n.nMu.Unlock()
-		return err
-	}
-	err = n.unlinkNext()
-	if err != nil {
-		n.nMu.Unlock()
-		return err
-	}
-
-	n.next = Neighbor{
-		id:      id,
-		IP:      ip,
-		NodeRPC: c,
-	}
-
+	n.fingers[0].node = rn
 	n.nMu.Unlock()
 	return nil
 }
@@ -336,7 +77,6 @@ func (n Node) getRandomNode(nodes []string) string {
 // JoinNetwork registers itself in the network by asking a random
 // node found by issuing a request to the nameserver
 func JoinNetwork(n *Node, id string) error {
-	var rnode string
 	err := n.registerNode()
 	if err != nil {
 		return err
@@ -349,75 +89,252 @@ func JoinNetwork(n *Node, id string) error {
 
 	if len(nodes) == 1 && nodes[0] == n.IP {
 		// I'm alone!!!
-		n.setSuccessor(n.id, n.IP)
-		//go n.reportState()
+		n.setSuccessor(n.Rnode)
+		n.setPredecessor(n.Rnode)
+		n.initFTable(true)
+		go n.reportState()
 		return nil
 	}
 
-	rnode = n.getRandomNode(nodes)
+	n.initFTable(false)
+	node := n.getRandomNode(nodes)
+	rnode := &comm.Rnode{IP: node}
 
-	// Asking the first node who's my successor
-	c, err := netutils.ConnectRPC(rnode)
+	err = n.setSuccFingers(rnode)
+	if err != nil {
+		return err
+	}
+	err = n.updateNeighbors()
 	if err != nil {
 		return err
 	}
 
-	succ, err := c.FindSuccessor(n.id)
+	return n.retrieveKeys()
+}
+
+func (n *Node) retrieveKeys() error {
+	keys, err := n.remote.GetKeysInInterval(*n.prev, n.prev.ID, n.ID)
 	if err != nil {
 		return err
+	}
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
+	for k, v := range *keys {
+		n.objectStore[k] = v
 	}
 
-	err = n.setSuccessor(util.StringToID(succ.ID), succ.IP)
-	if err != nil {
-		return err
-	}
+	return nil
+}
 
-	pre, err := n.next.FindPredecessor(n.id)
-	if err != nil {
-		return err
+func (n *Node) initFTable(alone bool) {
+	for i := 0; i < KeySize; i++ {
+		n.fingers[i].start = n.ID.PowMod(int64(i), int64(KeySize))
+		if alone {
+			n.fingers[i].node = n.Rnode
+		}
 	}
-
-	err = n.next.UpdatePredecessor(n.id, n.IP)
-	if err != nil {
-		return err
-	}
-
-	err = n.setPredecessor(util.StringToID(pre.ID), pre.IP)
-	if err != nil {
-		return err
-	}
-
-	err = n.prev.UpdateSuccessor(n.id, n.IP)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("Node joined. (%s <- %s -> %s)\n", n.prev.IP, n.IP, n.next.IP)
-	return netutils.CloseRPC(c)
 }
 
 func (n *Node) reportState() {
 	for {
-		time.Sleep(time.Second * 2)
-		log.Printf("State (%s): (%s:%s)\n", n.IP, n.prev.IP, n.next.IP)
-
+		time.Sleep(time.Second * 5)
+		log.Printf("State (%s): (%s:%s)\n", n.IP, n.prev.IP, n.fingers[0].node.IP)
 	}
 }
 
-func (n *Node) initFTable() {
-	for i := 1; i < KeySize; i++ {
-		n.fingers[i-1].start = n.id.CalculateStart(int64(i), int64(KeySize))
+func (n *Node) setSuccFingers(node *comm.Rnode) error {
+	// Who's y successor?
+	succ, err := n.remote.FindSuccessor(*node, n.fingers[0].start)
+	if err != nil {
+		return err
 	}
 
+	n.setSuccessor(succ)
+
+	temp, _ := n.remote.GetSuccessor(*succ)
+	if succ.ID.IsEqual(temp.ID) {
+		err := n.remote.UpdateSuccessor(*succ, n.ID, n.IP)
+		if err != nil {
+			return err
+		}
+	}
+
+	pre, err := n.remote.GetPredecessor(*succ)
+	if err != nil {
+		return err
+	}
+
+	n.setPredecessor(pre)
+
+	err = n.remote.UpdatePredecessor(*succ, n.ID, n.IP)
+	if err != nil {
+		return err
+	}
+
+	// Update Fingers according to new successor
+	for i := 0; i < KeySize-1; i++ {
+		if n.fingers[i+1].start.InLowerInclude(n.ID, n.fingers[i].node.ID) ||
+			n.fingers[i+1].start.InKeySpace(n.ID, n.fingers[i].node.ID) {
+			n.fingers[i+1].node = n.fingers[i].node
+		} else {
+			succ, err = n.remote.FindSuccessor(*node, n.fingers[i+1].start)
+			if err != nil {
+				return err
+			}
+			n.fingers[i+1].node = succ
+		}
+	}
+	go n.reportState()
+	return nil
 }
 
-func (n *Node) updateFTable(id, ip string, idx int) error {
+func (n *Node) updateFTable(id util.Identifier, ip string, idx int) error {
 	if idx >= KeySize {
 		return ErrInvalidIndex
 	}
-	n.nMu.Lock()
-	n.fingers[idx].ip = ip
-	n.fingers[idx].succ = util.StringToID(id)
-	n.nMu.Unlock()
+	newEntry := new(comm.Rnode)
 
+	n.nMu.Lock()
+	defer n.nMu.Unlock()
+
+	if id.InLowerInclude(n.ID, n.fingers[idx].node.ID) {
+		newEntry.IP = ip
+		newEntry.ID = id
+		n.fingers[idx].node = newEntry
+		err := n.remote.UpdateFingerTable(*n.prev, id, ip, idx)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
+}
+
+func (n *Node) state(w http.ResponseWriter, r *http.Request) {
+	p := &struct {
+		IP   string
+		Next string
+		Prev string
+	}{
+		n.IP,
+		n.prev.IP,
+		n.fingers[0].node.IP,
+	}
+	util.WriteJson(w, p)
+}
+
+func (n *Node) updateNeighbors() error {
+	for i := 0; i < KeySize; i++ {
+		pre, err := n.findPredecessor(n.ID.PreID(int64(i)))
+		if err != nil {
+			return err
+		}
+		log.Println("%d", pre.ID.IsEqual(n.ID))
+		err = n.remote.UpdateFingerTable(*pre, n.ID, n.IP, i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (n *Node) findPredecessor(id util.Identifier) (*comm.Rnode, error) {
+	var tnode *comm.Rnode
+	var succ *comm.Rnode
+	var err error
+	tnode = n.Rnode
+	succ = n.fingers[0].node
+
+	if id.InKeySpace(tnode.ID, succ.ID) {
+		return tnode, nil
+	}
+
+	// Checking if n is id's predecessor
+	for !id.InKeySpace(tnode.ID, succ.ID) {
+
+		if tnode.ID.IsEqual(n.ID) {
+			tnode = n.closestPreFinger(id)
+		} else {
+			tnode, err = n.remote.ClosestPreFinger(*tnode, id)
+			if err != nil {
+				return nil, err
+			}
+		}
+		if tnode.ID.IsEqual(n.ID) {
+			succ = n.fingers[0].node
+		} else {
+			succ, err = n.remote.GetSuccessor(*tnode)
+			fmt.Println(succ)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return tnode, nil
+}
+
+func (n *Node) findSuccessor(id util.Identifier) (*comm.Rnode, error) {
+	pre, err := n.findPredecessor(id)
+	if err != nil {
+		return nil, err
+	}
+	succ, err := n.remote.GetSuccessor(*pre)
+	if err != nil {
+		return nil, err
+	}
+	return succ, nil
+}
+
+// Finding closest predeceeding finger
+func (n *Node) closestPreFinger(id util.Identifier) *comm.Rnode {
+	for i := KeySize - 1; i >= 0; i-- {
+		if n.fingers[i].node.ID.IsBetween(n.ID, id) {
+			return n.fingers[i].node
+		}
+	}
+	return n.Rnode
+}
+
+func (n *Node) migrateKeys(from, to string) map[string]string {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	mk := make(map[string]string)
+
+	fromID := util.StringToID(from)
+	toID := util.StringToID(to)
+
+	for k, v := range n.objectStore {
+		if util.StringToID(k).InKeySpace(fromID, toID) {
+			mk[k] = v
+			delete(n.objectStore, k)
+		}
+	}
+	return mk
+}
+
+func (n *Node) notify(rn *comm.Rnode) {
+	if (n.prev.ID.IsEqual(n.ID)) || rn.ID.IsBetween(n.prev.ID, n.ID) {
+		n.setPredecessor(rn)
+	}
+}
+
+func (n *Node) fixFinger() {
+	idx := rand.Intn(KeySize-1) + 1
+	newSucc, err := n.findSuccessor(n.fingers[idx].start)
+	if err != nil {
+		log.Println(err)
+	}
+
+	n.fingers[idx].node = newSucc
+}
+
+func (n *Node) stabilize() {
+	temp, err := n.remote.GetPredecessor(*n.fingers[0].node)
+	if err != nil {
+		log.Println(err)
+	}
+	if temp.ID.IsBetween(n.ID, n.fingers[0].node.ID) {
+		n.setSuccessor(temp)
+	}
+	n.remote.Notify(n.fingers[0].node, n.Rnode)
 }

@@ -1,8 +1,6 @@
 package node
 
 import (
-	"fmt"
-
 	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/util"
 )
@@ -10,74 +8,64 @@ import (
 // FindPredecessor RPC call to find a predecessor of Key on node n
 func (n *Node) FindPredecessor(args *comm.Args, reply *comm.NodeID) error {
 	n.nMu.RLock()
+	defer n.nMu.RUnlock()
 	key := util.Identifier(args.ID)
-	var pre comm.NodeID
-	var err error
 
-	if n.prev.NodeRPC == nil {
-		reply.ID = string(n.id)
+	if n.ID.IsEqual(n.prev.ID) {
+		reply.ID = n.ID.ToString()
 		reply.IP = n.IP
-		n.nMu.RUnlock()
 		return nil
 	}
 
-	if n.id.IsEqual(n.prev.id) {
-		reply.ID = string(n.id)
-		reply.IP = n.IP
-		n.nMu.RUnlock()
-		return nil
-	}
-
-	if key.InKeySpace(n.id, n.next.id) {
-		reply.ID = string(n.id)
-		reply.IP = n.IP
-	} else if key.InKeySpace(n.prev.id, n.id) {
-		reply.ID = string(n.prev.id)
-		reply.IP = n.prev.IP
-	} else {
-		pre, err = n.next.FindPredecessor(key)
-		reply.ID = pre.ID
-		reply.IP = pre.IP
-	}
+	pre, err := n.findPredecessor(key)
 	if err != nil {
 		return err
 	}
 
-	n.nMu.RUnlock()
+	reply.ID = pre.ID.ToString()
+	reply.IP = pre.IP
+	return err
+}
+
+// FindPredecessor RPC call to find a predecessor of Key on node n
+func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+	n.nMu.RLock()
+	defer n.nMu.RUnlock()
+	key := util.Identifier(args.ID)
+
+	if n.ID.IsEqual(n.fingers[0].node.ID) {
+		reply.ID = n.ID.ToString()
+		reply.IP = n.IP
+		return nil
+	}
+
+	succ, err := n.findSuccessor(key)
+	if err != nil {
+		return err
+	}
+
+	reply.ID = succ.ID.ToString()
+	reply.IP = succ.IP
 	return err
 }
 
 // FindSuccessor Finding the successor of n
-func (n *Node) FindSuccessor(args *comm.Args, reply *comm.NodeID) error {
+func (n *Node) GetSuccessor(args *comm.Empty, reply *comm.NodeID) error {
 	n.nMu.RLock()
-	key := util.Identifier(args.ID)
-	var succ comm.NodeID
-	var err error
-	// If node is the only one in the ring
-	if n.next.NodeRPC == nil {
-		reply.ID = string(n.id)
-		reply.IP = n.IP
-		n.nMu.RUnlock()
-		return nil
-	}
-	if key.InKeySpace(n.prev.id, n.id) {
-		succ.ID = string(n.id)
-		succ.IP = n.IP
-	} else if key.InKeySpace(n.id, n.next.id) {
-		succ.ID = string(n.next.id)
-		succ.IP = n.next.IP
-	} else if key.IsLarger(n.id) || key.IsLess(n.id) {
-		succ, err = n.next.FindSuccessor(key)
-	} else {
-		// Should not reach this point
-		n.nMu.RUnlock()
-		return fmt.Errorf("Could not find successor")
-	}
+	defer n.nMu.RUnlock()
 
-	reply.ID = string(succ.ID)
-	reply.IP = succ.IP
-	n.nMu.RUnlock()
-	return err
+	reply.IP = n.fingers[0].node.IP
+	reply.ID = n.fingers[0].node.ID.ToString()
+	return nil
+}
+
+func (n *Node) GetPredecessor(args *comm.Empty, reply *comm.NodeID) error {
+	n.nMu.RLock()
+	defer n.nMu.RUnlock()
+
+	reply.IP = n.prev.IP
+	reply.ID = n.prev.ID.ToString()
+	return nil
 }
 
 // UpdatePredecessor Updates n's predecessor and initializes an RPC connection
@@ -85,7 +73,7 @@ func (n *Node) UpdatePredecessor(args *comm.NodeID, reply *comm.Empty) error {
 	IP := args.IP
 	ID := args.ID
 
-	err := n.setPredecessor(util.StringToID(ID), IP)
+	err := n.setPredecessor(&comm.Rnode{ID: util.StringToID(ID), IP: IP})
 	if err != nil {
 		return err
 	}
@@ -94,13 +82,13 @@ func (n *Node) UpdatePredecessor(args *comm.NodeID, reply *comm.Empty) error {
 
 // PutRemote Gets an RPC put request to store a Key/Value pair
 func (n *Node) PutRemote(args *comm.KeyValue, reply *comm.Empty) error {
-	n.putValue(args.Key, []byte(args.Value))
+	n.putValue(util.StringToID(args.Key), []byte(args.Value))
 	return nil
 }
 
 // GetRemote Gets an RPC put request to store a Key/Value pair
 func (n *Node) GetRemote(args *comm.KeyValue, reply *comm.KeyValue) error {
-	val, err := n.getValue(args.Key)
+	val, err := n.getValue(util.StringToID(args.Key))
 	if err != nil {
 		return err
 	}
@@ -113,7 +101,7 @@ func (n *Node) UpdateSuccessor(args *comm.NodeID, reply *comm.Empty) error {
 	IP := args.IP
 	ID := args.ID
 
-	err := n.setSuccessor(util.StringToID(ID), IP)
+	err := n.setSuccessor(&comm.Rnode{ID: util.StringToID(ID), IP: IP})
 	if err != nil {
 		return err
 	}
@@ -126,7 +114,22 @@ func (n *Node) Init(args *comm.Args, reply *comm.NodeID) error {
 	return nil
 }
 
+func (n *Node) ClosestPreFinger(args *string, reply *comm.NodeID) error {
+	rnode := n.closestPreFinger(util.StringToID(*args))
+	*reply = comm.NodeID{ID: rnode.ID.ToString(), IP: rnode.IP}
+	return nil
+}
+
 // UpdateFingerTable Updates n's fingertable's i'th entry
 func (n *Node) UpdateFingerTable(args *comm.FingerEntry, reply *comm.Empty) error {
-	return n.updateFTable(args.S.ID, args.S.IP, args.IDX)
+	return n.updateFTable(util.StringToID(args.S.ID), args.S.IP, args.IDX)
+}
+
+func (n *Node) GetKeysInInterval(ival *comm.Interval, reply *comm.Keys) error {
+	*reply = n.migrateKeys(ival.From, ival.To)
+	return nil
+}
+
+func (n *Node) Notify(node *comm.Rnode, reply *comm.Empty) {
+	n.notify(node)
 }

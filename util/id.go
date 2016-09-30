@@ -45,14 +45,22 @@ func (id Identifier) InKeySpace(one, two Identifier) bool {
 		bytes.Compare(two, id) >= 0
 }
 
+func (id Identifier) InLowerInclude(one, two Identifier) bool {
+	if bytes.Compare(one, two) == 1 {
+		return bytes.Compare(one, id) <= 0 || bytes.Compare(two, id) == 1
+	}
+	return bytes.Compare(one, id) <= 0 &&
+		bytes.Compare(two, id) == 1
+}
+
 func (id Identifier) IsBetween(one, two Identifier) bool {
 
 	// check whether ring wraps around
-	if bytes.Compare(one, two) == -1 {
-		return bytes.Compare(one, id) == 1 && (bytes.Compare(two, id) <= 0 || bytes.Compare(two, id) >= 0)
+	if bytes.Compare(one, two) == 1 {
+		return bytes.Compare(one, id) == -1 || bytes.Compare(two, id) == 1
 	}
-	return bytes.Compare(id, two) <= 0 &&
-		bytes.Compare(id, one) == 1
+	return bytes.Compare(one, id) == -1 &&
+		bytes.Compare(two, id) == 1
 }
 
 func (id Identifier) Add(id2 Identifier) Identifier {
@@ -61,6 +69,10 @@ func (id Identifier) Add(id2 Identifier) Identifier {
 		res[i] = id[i] + id2[i]
 	}
 	return res
+}
+
+func (id Identifier) ToString() string {
+	return string(id)
 }
 
 func Mod(id1, id2 Identifier) Identifier {
@@ -74,10 +86,16 @@ func Mod(id1, id2 Identifier) Identifier {
 	return res.Bytes()
 }
 
-func (id Identifier) CalculateStart(k, m int64) Identifier {
+func (id Identifier) PowMod(k, m int64) Identifier {
 	msquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(m), nil)
 	ksquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(k-1), nil)
 	left := new(big.Int).Add(big.NewInt(0).SetBytes(id), ksquared)
 	start := new(big.Int).Mod(left, msquared)
 	return start.Bytes()
+}
+
+func (id Identifier) PreID(k int64) Identifier {
+	ksquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(k), nil)
+	left := new(big.Int).Sub(big.NewInt(0).SetBytes(id), ksquared)
+	return left.Bytes()
 }

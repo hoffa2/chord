@@ -1,0 +1,970 @@
+[32mcompute-2-35[0m --> [31mstderr[0m panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused [recovered]
+[32mcompute-2-35[0m --> [31mstderr[0m 	panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-35[0m --> [31mstderr[0m 
+[32mcompute-2-35[0m --> [31mstderr[0m goroutine 1 [running]:
+[32mcompute-2-35[0m --> [31mstderr[0m panic(0x793ec0, 0xc4201ca1e0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:500 +0x1a1
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction.func1(0xc420155728)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:478 +0x247
+[32mcompute-2-35[0m --> [31mstderr[0m panic(0x793ec0, 0xc4201ca1e0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:458 +0x243
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).get(0xc420011910, 0xc4201ac260, 0x12, 0x0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:29 +0x188
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).FindSuccessor(0xc420011910, 0x0, 0x0, 0x0, 0xc4201ac260, 0x12, 0xc4201ac4a4, 0x14, 0x14, 0x46e2d0, ...)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:71 +0x5a
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/hoffa2/chord/node.(*Node).setSuccFingers(0xc4200f3e40, 0xc420154fe8, 0x0, 0x0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:284 +0xb4
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/hoffa2/chord/node.JoinNetwork(0xc4200f3e40, 0xc4200c3e20, 0x12, 0x99da40, 0xc42002e2c0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:259 +0x1d1
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/hoffa2/chord/node.Run(0xc42008c780, 0x7f40f2, 0xa)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/main.go:71 +0x9cf
+[32mcompute-2-35[0m --> [31mstderr[0m main.main.func1(0xc42008c780, 0x0, 0x0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:32 +0x5b
+[32mcompute-2-35[0m --> [31mstderr[0m reflect.Value.call(0x777940, 0x826600, 0x13, 0x7ef1b2, 0x4, 0xc4201556e8, 0x1, 0x1, 0x474878, 0x7e5020, ...)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:434 +0x5c8
+[32mcompute-2-35[0m --> [31mstderr[0m reflect.Value.Call(0x777940, 0x826600, 0x13, 0xc4201556e8, 0x1, 0x1, 0x0, 0xc42004f6d8, 0x47d606)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:302 +0xa4
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction(0x777940, 0x826600, 0xc42008c780, 0x0, 0x0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:487 +0x1e0
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/urfave/cli.Command.Run(0x7ef696, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7f2dc0, 0x8, 0x0, ...)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/command.go:189 +0xc3b
+[32mcompute-2-35[0m --> [31mstderr[0m github.com/urfave/cli.(*App).Run(0xc42012e000, 0xc42000c0c0, 0x6, 0x6, 0x0, 0x0)
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:240 +0x611
+[32mcompute-2-35[0m --> [31mstderr[0m main.main()
+[32mcompute-2-35[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:94 +0x6d9
+[32mcompute-1-7[0m --> [31mstderr[0m panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused [recovered]
+[32mcompute-1-7[0m --> [31mstderr[0m 	panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-1-7[0m --> [31mstderr[0m 
+[32mcompute-1-7[0m --> [31mstderr[0m goroutine 1 [running]:
+[32mcompute-1-7[0m --> [31mstderr[0m panic(0x793ec0, 0xc420128320)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:500 +0x1a1
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction.func1(0xc420185728)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:478 +0x247
+[32mcompute-1-7[0m --> [31mstderr[0m panic(0x793ec0, 0xc420128320)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:458 +0x243
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).get(0xc4201345b0, 0xc42012c2a0, 0x12, 0x0)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:29 +0x188
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).FindSuccessor(0xc4201345b0, 0x0, 0x0, 0x0, 0xc42012c2a0, 0x12, 0xc42012c504, 0x14, 0x14, 0x46e2d0, ...)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:71 +0x5a
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/hoffa2/chord/node.(*Node).setSuccFingers(0xc42016c000, 0xc420184fe8, 0x0, 0x0)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:284 +0xb4
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/hoffa2/chord/node.JoinNetwork(0xc42016c000, 0xc4201389a0, 0x11, 0x99da40, 0xc420136108)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:259 +0x1d1
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/hoffa2/chord/node.Run(0xc420162140, 0x7f40f2, 0xa)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/main.go:71 +0x9cf
+[32mcompute-1-7[0m --> [31mstderr[0m main.main.func1(0xc420162140, 0x0, 0x0)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:32 +0x5b
+[32mcompute-1-7[0m --> [31mstderr[0m reflect.Value.call(0x777940, 0x826600, 0x13, 0x7ef1b2, 0x4, 0xc4201856e8, 0x1, 0x1, 0x474878, 0x7e5020, ...)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:434 +0x5c8
+[32mcompute-1-7[0m --> [31mstderr[0m reflect.Value.Call(0x777940, 0x826600, 0x13, 0xc4201856e8, 0x1, 0x1, 0x0, 0xc42004f6d8, 0x47d606)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:302 +0xa4
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction(0x777940, 0x826600, 0xc420162140, 0x0, 0x0)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:487 +0x1e0
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/urfave/cli.Command.Run(0x7ef696, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7f2dc0, 0x8, 0x0, ...)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/command.go:189 +0xc3b
+[32mcompute-1-7[0m --> [31mstderr[0m github.com/urfave/cli.(*App).Run(0xc420158000, 0xc42000c0c0, 0x6, 0x6, 0x0, 0x0)
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:240 +0x611
+[32mcompute-1-7[0m --> [31mstderr[0m main.main()
+[32mcompute-1-7[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:94 +0x6d9
+[32mcompute-3-38[0m --> [31mstderr[0m panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused [recovered]
+[32mcompute-3-38[0m --> [31mstderr[0m 	panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-38[0m --> [31mstderr[0m 
+[32mcompute-3-38[0m --> [31mstderr[0m goroutine 1 [running]:
+[32mcompute-3-38[0m --> [31mstderr[0m panic(0x793ec0, 0xc4200549b0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:500 +0x1a1
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction.func1(0xc420165728)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:478 +0x247
+[32mcompute-3-38[0m --> [31mstderr[0m panic(0x793ec0, 0xc4200549b0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:458 +0x243
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).get(0xc4201125a0, 0xc4200bb8a0, 0x12, 0x0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:29 +0x188
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).FindSuccessor(0xc4201125a0, 0x0, 0x0, 0x0, 0xc4200bb8a0, 0x12, 0xc4200bbb24, 0x14, 0x14, 0x46e2d0, ...)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:71 +0x5a
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/hoffa2/chord/node.(*Node).setSuccFingers(0xc420154000, 0xc420164fe8, 0x0, 0x0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:284 +0xb4
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/hoffa2/chord/node.JoinNetwork(0xc420154000, 0xc420110920, 0x12, 0x99da40, 0xc420114110)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:259 +0x1d1
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/hoffa2/chord/node.Run(0xc420140140, 0x7f40f2, 0xa)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/main.go:71 +0x9cf
+[32mcompute-3-38[0m --> [31mstderr[0m main.main.func1(0xc420140140, 0x0, 0x0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:32 +0x5b
+[32mcompute-3-38[0m --> [31mstderr[0m reflect.Value.call(0x777940, 0x826600, 0x13, 0x7ef1b2, 0x4, 0xc4201656e8, 0x1, 0x1, 0x474878, 0x7e5020, ...)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:434 +0x5c8
+[32mcompute-3-38[0m --> [31mstderr[0m reflect.Value.Call(0x777940, 0x826600, 0x13, 0xc4201656e8, 0x1, 0x1, 0x0, 0xc4200476d8, 0x47d606)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:302 +0xa4
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction(0x777940, 0x826600, 0xc420140140, 0x0, 0x0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:487 +0x1e0
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/urfave/cli.Command.Run(0x7ef696, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7f2dc0, 0x8, 0x0, ...)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/command.go:189 +0xc3b
+[32mcompute-3-38[0m --> [31mstderr[0m github.com/urfave/cli.(*App).Run(0xc420136000, 0xc42000c0c0, 0x6, 0x6, 0x0, 0x0)
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:240 +0x611
+[32mcompute-3-38[0m --> [31mstderr[0m main.main()
+[32mcompute-3-38[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:94 +0x6d9
+[32mcompute-1-11[0m --> [31mstderr[0m listen tcp4 :8010: bind: address already in use
+[32mcompute-3-25[0m --> [31mstderr[0m panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused [recovered]
+[32mcompute-3-25[0m --> [31mstderr[0m 	panic: dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-25[0m --> [31mstderr[0m 
+[32mcompute-3-25[0m --> [31mstderr[0m goroutine 1 [running]:
+[32mcompute-3-25[0m --> [31mstderr[0m panic(0x793ec0, 0xc4201245f0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:500 +0x1a1
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction.func1(0xc420161728)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:478 +0x247
+[32mcompute-3-25[0m --> [31mstderr[0m panic(0x793ec0, 0xc4201245f0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/share/apps/go/src/runtime/panic.go:458 +0x243
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).get(0xc420128020, 0xc4201229e0, 0x12, 0x0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:29 +0x188
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/hoffa2/chord/netutils.(*Remote).FindSuccessor(0xc420128020, 0x0, 0x0, 0x0, 0xc4201229e0, 0x12, 0xc420122c84, 0x14, 0x14, 0x46e2d0, ...)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/netutils/remote.go:71 +0x5a
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/hoffa2/chord/node.(*Node).setSuccFingers(0xc420130000, 0xc420160fe8, 0x0, 0x0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:284 +0xb4
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/hoffa2/chord/node.JoinNetwork(0xc420130000, 0xc4200bbf00, 0x12, 0x99da40, 0xc4201420c8)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/node.go:259 +0x1d1
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/hoffa2/chord/node.Run(0xc420084780, 0x7f40f2, 0xa)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/node/main.go:71 +0x9cf
+[32mcompute-3-25[0m --> [31mstderr[0m main.main.func1(0xc420084780, 0x0, 0x0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:32 +0x5b
+[32mcompute-3-25[0m --> [31mstderr[0m reflect.Value.call(0x777940, 0x826600, 0x13, 0x7ef1b2, 0x4, 0xc4201616e8, 0x1, 0x1, 0x474878, 0x7e5020, ...)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:434 +0x5c8
+[32mcompute-3-25[0m --> [31mstderr[0m reflect.Value.Call(0x777940, 0x826600, 0x13, 0xc4201616e8, 0x1, 0x1, 0x0, 0xc4200476d8, 0x47d606)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/share/apps/go/src/reflect/value.go:302 +0xa4
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/urfave/cli.HandleAction(0x777940, 0x826600, 0xc420084780, 0x0, 0x0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:487 +0x1e0
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/urfave/cli.Command.Run(0x7ef696, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7f2dc0, 0x8, 0x0, ...)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/command.go:189 +0xc3b
+[32mcompute-3-25[0m --> [31mstderr[0m github.com/urfave/cli.(*App).Run(0xc42010e000, 0xc42000c0c0, 0x6, 0x6, 0x0, 0x0)
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/urfave/cli/app.go:240 +0x611
+[32mcompute-3-25[0m --> [31mstderr[0m main.main()
+[32mcompute-3-25[0m --> [31mstderr[0m 	/home/hho051/go/src/github.com/hoffa2/chord/main.go:94 +0x6d9
+[32mcompute-3-47[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-43[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-20[0m --> [31mstderr[0m 2016/09/29 13:34:18 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-20[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-10[0m --> [31mstderr[0m 2016/09/29 13:34:34 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-10[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-33[0m --> [31mstderr[0m 2016/09/29 13:34:39 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-33[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-31[0m --> [31mstderr[0m 2016/09/29 13:34:46 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-31[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-46[0m --> [31mstderr[0m 2016/09/29 13:34:53 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-3-46[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-25[0m --> [31mstderr[0m 2016/09/29 13:35:27 dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-2-25[0m --> [31mstderr[0m dial tcp 10.1.255.185:8010: getsockopt: connection refused
+[32mcompute-1-1[0m --> [31mstderr[0m 2016/09/29 13:35:56 dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-1-1[0m --> [31mstderr[0m dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-3-43[0m --> [31mstderr[0m 2016/09/29 13:38:59 dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-3-43[0m --> [31mstderr[0m dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-2-25[0m --> [31mstderr[0m 2016/09/29 13:39:28 dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-2-25[0m --> [31mstderr[0m dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-3-39[0m --> [31mstderr[0m 2016/09/29 13:45:53 dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-3-39[0m --> [31mstderr[0m dial tcp 10.1.255.185:8011: getsockopt: connection refused
+[32mcompute-3-17[0m -->  KILLED
+[32mcompute-2-21[0m --> [31mstderr[0m 2016/09/29 13:46:58 State (compute-2-21.local): (compute-2-21.local:compute-2-21.local)
+[32mcompute-2-21[0m --> [31mstderr[0m 2016/09/29 13:47:03 State (compute-2-21.local): (compute-2-21.local:compute-2-21.local)
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d true
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d true
+[32mcompute-2-34[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:07 %d false
+[32mcompute-2-21[0m --> [31mstderr[0m 2016/09/29 13:47:08 State (compute-2-21.local): (compute-2-34.local:compute-2-34.local)
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:12 State (compute-2-34.local): (compute-2-21.local:compute-2-21.local)
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[8 154 100 53 58 149 20 100 194 165 1 173 174 230 122 44 14 144 105 32] compute-2-34.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[187 33 18 32 250 85 87 98 236 175 65 205 74 28 158 251 17 50 109 152] compute-2-35.local}
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:13 %d false
+[32mcompute-2-35[0m -->  &{[93 206 59 118 85 25 79 9 140 57 134 40 131 194 118 54 124 184 30 49] compute-2-21.local}
+[32mcompute-2-21[0m --> [31mstderr[0m 2016/09/29 13:47:13 State (compute-2-21.local): (compute-2-34.local:compute-2-35.local)
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:17 State (compute-2-34.local): (compute-2-35.local:compute-2-21.local)
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:18 State (compute-2-35.local): (compute-2-21.local:compute-2-34.local)
+[32mcompute-2-21[0m --> [31mstderr[0m 2016/09/29 13:47:18 State (compute-2-21.local): (compute-2-34.local:compute-2-35.local)
+[32mcompute-2-34[0m --> [31mstderr[0m 2016/09/29 13:47:22 State (compute-2-34.local): (compute-2-35.local:compute-2-21.local)
+[32mcompute-2-35[0m --> [31mstderr[0m 2016/09/29 13:47:23 State (compute-2-35.local): (compute-2-21.local:compute-2-34.local)
+[32mcompute-2-21[0m -->  KILLED
+[32mcompute-2-34[0m -->  KILLED
+[32mcompute-2-35[0m -->  KILLED
