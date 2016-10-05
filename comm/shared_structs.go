@@ -30,7 +30,6 @@ type KeyValue struct {
 
 type Test struct {
 }
-
 type Empty struct{}
 
 type NodeID struct {
@@ -38,7 +37,21 @@ type NodeID struct {
 	IP string
 }
 
+type Rnodes []Rnode
+
 type Rnode struct {
 	ID util.Identifier
 	IP string
+}
+
+func (slice Rnodes) Len() int {
+	return len(slice)
+}
+
+func (slice Rnodes) Less(i, j int) bool {
+	return slice[i].ID.IsLess(slice[j].ID)
+}
+
+func (slice Rnodes) Swap(i, j int) {
+	slice[i], slice[j] = slice[j], slice[i]
 }

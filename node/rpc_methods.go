@@ -122,7 +122,7 @@ func (n *Node) ClosestPreFinger(args *string, reply *comm.NodeID) error {
 
 // UpdateFingerTable Updates n's fingertable's i'th entry
 func (n *Node) UpdateFingerTable(args *comm.FingerEntry, reply *comm.Empty) error {
-	return n.updateFTable(util.StringToID(args.S.ID), args.S.IP, args.IDX)
+	return nil
 }
 
 func (n *Node) GetKeysInInterval(ival *comm.Interval, reply *comm.Keys) error {
@@ -130,6 +130,12 @@ func (n *Node) GetKeysInInterval(ival *comm.Interval, reply *comm.Keys) error {
 	return nil
 }
 
-func (n *Node) Notify(node *comm.Rnode, reply *comm.Empty) {
+func (n *Node) Notify(node *comm.Rnode, reply *comm.Empty) error {
 	n.notify(node)
+	return nil
+}
+
+func (n *Node) Leave(in *comm.Empty, out *comm.Empty) error {
+	n.exitChan <- "exit"
+	return nil
 }

@@ -1,41 +1,49 @@
 package netutils
 
 import (
+	"net"
 	"sync"
+	"time"
 
 	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/util"
 )
 
+type failhandler func(rn *comm.Rnode)
+
 // Wraps the RPC communication
 type Remote struct {
 	conns map[string]*NodeRPC
 	sync.Mutex
+	fail    failhandler
+	timeout time.Duration
 }
 
-func NewRemote() *Remote {
+func NewRemote(f failhandler) *Remote {
 	return &Remote{
-		conns: make(map[string]*NodeRPC),
+		conns:   make(map[string]*NodeRPC),
+		fail:    f,
+		timeout: time.Duration(time.Second * 1),
 	}
 }
 
-func (r *Remote) get(host string) (*NodeRPC, error) {
+func (r *Remote) get(rn comm.Rnode) (*NodeRPC, error) {
 	r.Lock()
 	defer r.Unlock()
-	val, ok := r.conns[host]
+	val, ok := r.conns[rn.IP]
 	if !ok {
-		conn, err := connectRPC(host)
+		conn, err := ConnectRPC(rn.IP)
 		if err != nil {
 			return nil, err
 		}
-		r.conns[host] = conn
+		r.conns[rn.IP] = conn
 		return conn, nil
 	}
 	return val, nil
 }
 
 func (r *Remote) GetSuccessor(rn comm.Rnode) (*comm.Rnode, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +58,7 @@ func (r *Remote) GetSuccessor(rn comm.Rnode) (*comm.Rnode, error) {
 }
 
 func (r *Remote) GetPredecessor(rn comm.Rnode) (*comm.Rnode, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +72,7 @@ func (r *Remote) GetPredecessor(rn comm.Rnode) (*comm.Rnode, error) {
 }
 
 func (r *Remote) FindPredecessor(rn comm.Rnode, id util.Identifier) (*comm.Rnode, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +87,7 @@ func (r *Remote) FindPredecessor(rn comm.Rnode, id util.Identifier) (*comm.Rnode
 }
 
 func (r *Remote) FindSuccessor(rn comm.Rnode, id util.Identifier) (*comm.Rnode, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +103,7 @@ func (r *Remote) FindSuccessor(rn comm.Rnode, id util.Identifier) (*comm.Rnode, 
 
 // PutRemote Stores a value in its respective node
 func (r *Remote) PutRemote(rn comm.Rnode, key, value string) error {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return err
 	}
@@ -110,7 +118,7 @@ func (r *Remote) PutRemote(rn comm.Rnode, key, value string) error {
 
 // PutRemote Stores a value in its respective node
 func (r *Remote) GetRemote(rn comm.Rnode, key string) (string, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return "", err
 	}
@@ -125,7 +133,7 @@ func (r *Remote) GetRemote(rn comm.Rnode, key string) (string, error) {
 }
 
 func (r *Remote) UpdatePredecessor(rn comm.Rnode, id util.Identifier, ip string) error {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return err
 	}
@@ -138,7 +146,7 @@ func (r *Remote) UpdatePredecessor(rn comm.Rnode, id util.Identifier, ip string)
 }
 
 func (r *Remote) UpdateSuccessor(rn comm.Rnode, id util.Identifier, ip string) error {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return err
 	}
@@ -153,7 +161,7 @@ func (r *Remote) UpdateSuccessor(rn comm.Rnode, id util.Identifier, ip string) e
 }
 
 func (r *Remote) ClosestPreFinger(rn comm.Rnode, id util.Identifier) (*comm.Rnode, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +177,7 @@ func (r *Remote) ClosestPreFinger(rn comm.Rnode, id util.Identifier) (*comm.Rnod
 }
 
 func (r *Remote) UpdateFingerTable(rn comm.Rnode, s util.Identifier, ip string, idx int) error {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return err
 	}
@@ -187,7 +195,7 @@ func (r *Remote) UpdateFingerTable(rn comm.Rnode, s util.Identifier, ip string, 
 }
 
 func (r *Remote) GetKeysInInterval(rn comm.Rnode, from, to util.Identifier) (*map[string]string, error) {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
 		return nil, err
 	}
@@ -206,14 +214,22 @@ func (r *Remote) GetKeysInInterval(rn comm.Rnode, from, to util.Identifier) (*ma
 }
 
 func (r *Remote) Notify(rn comm.Rnode, node *comm.Rnode) error {
-	c, err := r.get(rn.IP)
+	c, err := r.get(rn)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = c.Call("NodeComm.Notify", node, &comm.Empty{})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &reply, nil
+	return nil
+}
+
+func (r *Remote) IsAlive(rn comm.Rnode) (bool, error) {
+	_, err := net.DialTimeout("tcp", rn.IP+PORT, r.timeout)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

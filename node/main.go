@@ -17,8 +17,8 @@ import (
 )
 
 type Logger struct {
-	err  *log.Logger
-	info *log.Logger
+	Err  *log.Logger
+	Info *log.Logger
 }
 
 // Run Runs a chord node
@@ -27,6 +27,7 @@ func Run(c *cli.Context) error {
 	if port == "" {
 		port = "8030"
 	}
+
 	NameServerAddr := c.String("nameserver")
 
 	r := mux.NewRouter()
@@ -43,7 +44,7 @@ func Run(c *cli.Context) error {
 	errlog := log.New(os.Stderr, "\x1b[31m"+n+"\x1b[0m"+" --> ", log.Lshortfile)
 
 	client := http.Client{
-		Timeout: time.Duration(time.Second * 2),
+		Timeout: time.Duration(time.Second * 3),
 	}
 	node := &Node{
 		nameServer: NameServerAddr,
@@ -54,9 +55,12 @@ func Run(c *cli.Context) error {
 		objectStore: make(map[string]string),
 		conn:        client,
 		fingers:     make([]FingerEntry, KeySize),
-		log:         &Logger{err: errlog, info: infolog},
-		remote:      netutils.NewRemote(),
+		log:         &Logger{Err: errlog, Info: infolog},
+		exitChan:    make(chan string),
+		graphIP:     "129.242.22.74:8080",
 	}
+
+	node.remote = netutils.NewRemote(node.failhandler)
 	l, err := netutils.SetupRPCServer("8011", node)
 	if err != nil {
 		return err
@@ -69,28 +73,42 @@ func Run(c *cli.Context) error {
 		os.Exit(1)
 	}()
 
+	// Recover from panic
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered: ", r)
+		}
+		l.Close()
+		os.Exit(1)
+	}()
 	err = JoinNetwork(node, n)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-
 	// Registering the put and get methods
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 	r.HandleFunc("/state/get", node.state).Methods("GET")
-	err = http.ListenAndServe(":"+port, r)
-	if err != nil {
-		log.Println(err)
+	errchan := make(chan error)
+	go func() {
+		err := http.ListenAndServe(":"+port, r)
+		if err != nil {
+			errchan <- err
+		}
+	}()
+
+	select {
+	case err := <-errchan:
+		l.Close()
 		return err
+	case <-node.exitChan:
+		node.leave()
+		l.Close()
+		node.log.Err.Println("GOT LEAVE MESSAGE!!!")
+		node.log.Err.Println("AFTER EXIT!!!")
+		os.Exit(0)
+
 	}
-	return nil
-}
-
-func (l *Logger) Info(message string, args ...interface{}) {
-	l.info.Printf(message, args)
-}
-
-func (l *Logger) Error(message string, args ...interface{}) {
-	l.err.Printf(message, args)
+	panic("Reached end")
 }

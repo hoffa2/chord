@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-var deftests = 1000
+var deftests = 10000
 
 func Run(c *cli.Context) error {
 	tests := c.Int("tests")
@@ -24,6 +24,7 @@ func Run(c *cli.Context) error {
 		results:    make(chan time.Duration, tests*2),
 		nkeys:      tests,
 		keyvalues:  make(map[string]string),
+		errors:     make(chan error, tests*2),
 	}
 
 	time.Sleep(time.Second * 10)

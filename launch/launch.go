@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,8 +16,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hoffa2/chord/comm"
+	"github.com/hoffa2/chord/netutils"
 	"github.com/hoffa2/chord/util"
-	"github.com/kvz/logstreamer"
 	"github.com/urfave/cli"
 )
 
@@ -27,6 +27,8 @@ var (
 	RunClientCmd     = []string{"chord", "client", "--port 8000"}
 	RunNameServerCmd = "chord nameserver"
 	ListHosts        = "rocks_list_hosts.sh"
+	KILLED           = "KILLED"
+	ALIVE            = "ALIVE"
 )
 
 type cmdfunc func([]string) error
@@ -37,12 +39,14 @@ type SSHConn struct {
 	host    string
 	process string
 	cmd     *exec.Cmd
+	state   string
 }
 
 type NodeState struct {
-	IP   string
-	Next string
-	Prev string
+	IP         string
+	Next       string
+	Prev       string
+	Successors comm.Rnodes
 }
 
 type Connection struct {
@@ -67,6 +71,7 @@ type Console struct {
 func (c *Connection) ListNodes(args []string) error {
 	client := http.Client{Timeout: time.Duration(time.Second * 2)}
 	var n NodeState
+	fmt.Printf("Nodes Running: %d\n", len(c.conns)-1)
 	for _, node := range c.conns {
 		if node.host == c.nameserver {
 			continue
@@ -78,11 +83,8 @@ func (c *Connection) ListNodes(args []string) error {
 		}
 		resp, err := client.Do(req)
 		if err != nil {
-			return err
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("Could not get state from : %s", node.host)
+			fmt.Printf(Blue+"%s  "+Red+"KILLED\n"+White, node.host)
+			continue
 		}
 
 		err = json.NewDecoder(resp.Body).Decode(&n)
@@ -91,6 +93,10 @@ func (c *Connection) ListNodes(args []string) error {
 		}
 		fmt.Printf("Node: "+Blue+"%s"+White+" ==> ("+Green+"\t%s "+Red+"%s"+White+")\n",
 			n.IP, n.Prev, n.Next)
+		fmt.Println("Successors:")
+		for _, succ := range n.Successors {
+			fmt.Printf("%s\n", succ.IP)
+		}
 	}
 	return nil
 }
@@ -100,7 +106,7 @@ func (c *Console) RunConsole() {
 	for {
 		fmt.Printf(Blue + "--> " + White)
 		input, _ := in.ReadString('\n')
-		cmd := strings.Split(input, " \n")
+		cmd := strings.Split(strings.TrimSpace(input), " ")
 
 		if len(cmd) == 0 {
 			continue
@@ -126,11 +132,39 @@ func (c *Connection) AddNode(args []string) error {
 }
 
 func (c *Connection) killNode(args []string) error {
-	return errors.New("Not implemented")
+	idx, err := strconv.Atoi(args[0])
+	if err != nil {
+		return err
+	}
+	if idx >= len(c.conns) {
+		return fmt.Errorf("Out of range")
+	}
+
+	killConnection(c.conns[idx])
+
+	return nil
 }
 
 func (c *Connection) RunTests(args []string) error {
+	fmt.Printf(Red + "Running Test: " + White)
 	return c.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", c.nameserver))
+}
+
+func (c *Connection) leaveNode(args []string) error {
+	noderpc, err := netutils.ConnectRPC(args[0])
+	if err != nil {
+		return err
+	}
+	err = noderpc.Call("NodeComm.Leave", &comm.Empty{}, &comm.Empty{})
+	if err != nil {
+		return err
+	}
+	for _, conn := range c.conns {
+		if conn.host == args[0] {
+			conn.state = KILLED
+		}
+	}
+	return nil
 }
 
 func InitConsole(conn *Connection) *Console {
@@ -139,7 +173,8 @@ func InitConsole(conn *Connection) *Console {
 	c.commands["ls"] = conn.ListNodes
 	c.commands["shutdown"] = conn.CloseConnections
 	c.commands["add"] = conn.AddNode
-	c.commands["leave"] = conn.killNode
+	c.commands["kill"] = conn.killNode
+	c.commands["leave"] = conn.leaveNode
 	c.commands["test"] = conn.RunTests
 	return c
 }
@@ -182,23 +217,34 @@ func Run(c *cli.Context) error {
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	signal.Notify(ch, os.Interrupt, syscall.SIGINT)
 
+	defer func() {
+		if r := recover(); r != nil {
+			conns.CloseConnections([]string{})
+		}
+	}()
+
 	<-ch
 	conns.CloseConnections([]string{})
 	return nil
 }
 
+func killConnection(s *SSHConn) {
+	_, err := exec.Command("ssh", "-f", s.host,
+		fmt.Sprintf("pgrep -f \"%s\" | xargs kill -s SIGINT\n", s.process)).Output()
+	if err != nil {
+		log.Println(err)
+	}
+	err = s.cmd.Process.Kill()
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("Shutdown -> %s with err: %s\n", s.host, err)
+	s.state = KILLED
+}
+
 func (c *Connection) CloseConnections(args []string) error {
 	for _, conn := range c.conns {
-		_, err := exec.Command("ssh", "-f", conn.host,
-			fmt.Sprintf("pgrep -f \"%s\" | xargs kill -s SIGINT\n", conn.process)).Output()
-		if err != nil {
-			log.Println(err)
-		}
-		err = conn.cmd.Process.Kill()
-		if err != nil {
-			log.Println(err)
-		}
-		fmt.Printf("Shutdown -> %s with err: %s\n", conn.host, err)
+		killConnection(conn)
 	}
 	return nil
 }
@@ -218,10 +264,10 @@ func (c *Connection) runCommand(command string, args ...string) error {
 
 func (c *Connection) runSSHCommand(host, cwd, command string) error {
 	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
-	logger := log.New(c.logfile, "\x1b[32m"+host+"\x1b[0m"+" --> ", 0)
+	//logger := log.New(c.logfile, "\x1b[32m"+host+"\x1b[0m"+" --> ", 0)
 
-	logStreamerOut := logstreamer.NewLogstreamer(logger, " ", false)
-	logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
+	//logStreamerOut := logstreamer.NewLogstreamer(logger, " ", false)
+	//logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
 	fmt.Printf("\x1b[32m"+"Started \x1b[0m"+" --> "+" %s\n", host)
 
 	sshconn := &SSHConn{
@@ -229,9 +275,9 @@ func (c *Connection) runSSHCommand(host, cwd, command string) error {
 		cmd:     cmd,
 		process: command,
 	}
-	cmd.Stdout = logStreamerOut
+	cmd.Stdout = c.logfile
 	cmd.Stdin = &sshconn.inn
-	cmd.Stderr = logStreamerErr
+	cmd.Stderr = c.logfile
 	c.conns = append(c.conns, sshconn)
 	err := cmd.Start()
 	if err != nil {

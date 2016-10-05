@@ -2,24 +2,20 @@ package node
 
 import (
 	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/hoffa2/chord/comm"
 	"github.com/hoffa2/chord/util"
 )
 
-func (n *Node) assertPlacement(key string) {
-	k := util.StringToID(key)
-	if !k.InKeySpace(n.prev.ID, n.ID) {
-		log.Printf("%s should not be located on %s\n", key, n.IP)
-	}
-}
-
 func (n *Node) putValue(key util.Identifier, body []byte) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	n.objectStore[key.ToString()] = string(body)
+	n.log.Info.Printf("Putting key %s on node %s\n", string(body), n.IP)
+	if !key.InKeySpace(n.prev.ID, n.ID) {
+		n.log.Err.Printf("Key %s is not in %s's keyspace\n", key.ToString(), n.IP)
+	}
 }
 
 func (n *Node) getValue(key util.Identifier) (string, error) {
@@ -29,6 +25,10 @@ func (n *Node) getValue(key util.Identifier) (string, error) {
 	val, ok := n.objectStore[key.ToString()]
 	if !ok {
 		return "", ErrNotFound
+	}
+
+	if !key.InKeySpace(n.prev.ID, n.ID) {
+		n.log.Err.Printf("Key %s is not in %s's keyspace\n", key.ToString(), n.IP)
 	}
 	return val, nil
 }
@@ -63,10 +63,11 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 
 	key := readKey(r)
 
-	KID := util.StringToID(key)
+	KID := util.StringToID(util.HashValue(key))
 
 	s, err := n.findKeySuccessor(KID)
 	if err != nil {
+		n.log.Err.Printf("Could not find %s's successor\n", key)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -75,6 +76,7 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	} else {
 		err = n.sendToSuccessor(KID.ToString(), string(body), s)
 		if err != nil {
+		n.log.Err.Printf("Could not find %s's successor\n", key)
 			// TODO: Notify the actual error in some way
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -89,7 +91,7 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	key := readKey(r)
-	KID := util.StringToID(key)
+	KID := util.StringToID(util.HashValue(key))
 
 	s, err := n.findKeySuccessor(KID)
 	if err != nil {
@@ -97,15 +99,17 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.ID.IsEqual(n.ID) {
+		n.log.Info.Printf("Getting key %s from node %s\n", key, n.IP)
 		val, err = n.getValue(KID)
 	} else {
-		val, err = n.getFromSuccessor(key, s)
+		n.log.Info.Printf("Getting key (%s) from %s\n", key, n.fingers[0].node.IP)
+		val, err = n.getFromSuccessor(KID.ToString(), s)
 	}
 	if err == ErrNotFound {
 		util.ErrorNotFound(w, "Key %s not found", key)
 		return
 	} else if err != nil {
-		log.Println(err.Error())
+		n.log.Err.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -36,6 +36,8 @@ var (
 	ErrNextToSmall = errors.New("Successor is less than n id")
 	// ErrPrevToLarge If the predecessor is too large
 	ErrPrevToLarge = errors.New("Predecessor is larger than n id")
+	ErrExhausted   = errors.New("Successor list has exhausted")
+	ErrNotFirst    = errors.New("Successor provided is not first")
 )
 
 // Neighbor Describing an adjacent node in the ring
@@ -52,6 +54,7 @@ type Node struct {
 	objectStore map[string]string
 	// IP Address of nameserver
 	nameServer string
+	graphIP    string
 	conn       http.Client
 	// FingerTable
 	fingers []FingerEntry
@@ -59,8 +62,10 @@ type Node struct {
 	prev *comm.Rnode
 	// RPC connection wrapper
 	remote *netutils.Remote
-
-	successors []*comm.Rnode
-
+	// Channel to signal a leaving node
+	exitChan chan string
+	// Successor list
+	successors []comm.Rnode
+	// Logger
 	log *Logger
 }

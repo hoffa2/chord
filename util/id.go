@@ -63,6 +63,18 @@ func (id Identifier) IsBetween(one, two Identifier) bool {
 		bytes.Compare(two, id) == 1
 }
 
+func (id Identifier) IsBetweenEqual(one, two Identifier) bool {
+	if bytes.Compare(one, two) == 0 {
+		return bytes.Compare(one, id) == -1 || bytes.Compare(two, id) == 1
+	}
+
+	// check whether ring wraps around
+	if bytes.Compare(one, two) == 1 {
+		return bytes.Compare(one, id) == -1 || bytes.Compare(two, id) == 1
+	}
+	return bytes.Compare(one, id) == -1 &&
+		bytes.Compare(two, id) == 1
+}
 func (id Identifier) Add(id2 Identifier) Identifier {
 	res := make(Identifier, len(id))
 	for i, _ := range res {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -21,43 +22,53 @@ type Client struct {
 	results   chan time.Duration
 	keyvalues map[string]string
 	nkeys     int
+	errors    chan error
+	sync.WaitGroup
 }
 
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const keysize = 160
 
 func (c *Client) putKey(key, val, nodeip string) error {
+	defer c.WaitGroup.Done()
 	url := fmt.Sprintf("http://%s/%s", nodeip+":8030", key)
 	req, err := http.NewRequest("PUT", url, strings.NewReader(val))
 	if err != nil {
-		return err
+		c.errors <- err
+		return nil
 	}
+	req.Close = true
 	before := time.Now()
 	resp, err := c.conn.Do(req)
 	if err != nil {
-		return err
+		c.errors <- err
+		return nil
 	}
 	defer resp.Body.Close()
 	c.results <- time.Now().Sub(before)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Unsuccesful PUT request (%s)\tErr: %s", string(body))
+		c.errors <- fmt.Errorf("Unsuccesful PUT request (%s)", string(body))
 	}
 	io.Copy(ioutil.Discard, resp.Body)
 	return nil
 }
 
 func (c *Client) getKey(key, nodeip string) error {
+	defer c.WaitGroup.Done()
 	url := fmt.Sprintf("http://%s/%s", nodeip+":8030", key)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return err
+		c.errors <- err
+		return nil
 	}
 	before := time.Now()
+	req.Close = true
 	resp, err := c.conn.Do(req)
 	if err != nil {
-		return err
+		c.errors <- err
+		return nil
 	}
 	defer resp.Body.Close()
 
@@ -69,10 +80,10 @@ func (c *Client) getKey(key, nodeip string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("Unsuccesful GET request (%s)\tErr: %s", key, string(body))
+		c.errors <- fmt.Errorf("Unsuccesful GET request (%s)\tErr: %s", key, string(body))
 	}
 	if strings.Compare(string(body), c.keyvalues[key]) != 0 {
-		return fmt.Errorf("Get returned wrong key (%s:%s)", string(body), c.keyvalues[key])
+		c.errors <- fmt.Errorf("Get returned wrong key (%s:%s)", string(body), c.keyvalues[key])
 	}
 
 	return nil
@@ -85,20 +96,19 @@ func (c *Client) RunTests() error {
 
 	start := time.Now()
 	for k, v := range c.keyvalues {
-		err := c.putKey(k, v, c.IPs[rand.Intn(len(c.IPs))])
-		if err != nil {
-			return err
-		}
+		c.WaitGroup.Add(1)
+		go c.putKey(k, v, c.IPs[rand.Intn(len(c.IPs))])
+	}
+	c.WaitGroup.Wait()
+	for k, _ := range c.keyvalues {
+		c.WaitGroup.Add(1)
+		go c.getKey(k, c.IPs[rand.Intn(len(c.IPs))])
 	}
 
-	for k, _ := range c.keyvalues {
-		err := c.getKey(k, c.IPs[rand.Intn(len(c.IPs))])
-		if err != nil {
-			return err
-		}
-	}
+	c.WaitGroup.Wait()
 	end := time.Now().Sub(start)
 	c.finalize(end)
+	c.checkErrors()
 	return nil
 }
 
@@ -123,6 +133,18 @@ func (c *Client) finalize(totalTime time.Duration) {
 			avgTime := avgTotal / float64(len(times))
 			fmt.Printf("\tRequests/s\t%4.4f\n", float64(len(times))/totalTime.Seconds())
 			fmt.Printf("\tMeanLatenct:\t%4.4f\n", avgTime)
+			return
+		}
+	}
+
+}
+
+func (c *Client) checkErrors() {
+	for {
+		select {
+		case err := <-c.errors:
+			fmt.Println(err)
+		default:
 			return
 		}
 	}

@@ -3,10 +3,12 @@ package netutils
 import (
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"net/rpc"
+	"net/url"
 	"sync"
 	"time"
 
@@ -15,12 +17,14 @@ import (
 
 type NodeRPC struct {
 	sync.Mutex
-	host string
-	c    *rpc.Client
+	host    string
+	c       *rpc.Client
+	timeout time.Duration
 }
 
 var (
-	PORT = ":8011"
+	PORT       = ":8011"
+	ErrTimeout = errors.New("RPC call timed out")
 )
 
 func RegisterNewType(t interface{}) {
@@ -32,7 +36,7 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 }
 
 // ConnectRPC Instantiates a RPC connections
-func connectRPC(host string) (*NodeRPC, error) {
+func ConnectRPC(host string) (*NodeRPC, error) {
 	conn, err := net.Dial("tcp", host+PORT)
 	if err != nil {
 		return nil, err
@@ -48,7 +52,7 @@ func connectRPC(host string) (*NodeRPC, error) {
 		client.Close()
 		return nil, fmt.Errorf("Init failed")
 	}
-	return &NodeRPC{c: client, host: host}, nil
+	return &NodeRPC{c: client, host: host, timeout: time.Duration(time.Second * 2)}, nil
 }
 
 func (n *NodeRPC) reDial() error {
@@ -99,19 +103,19 @@ func GetNodeIPs(address string) ([]string, error) {
 	return list, nil
 }
 
+func UnRegister(ip, nameserver string) {
+	http.PostForm(fmt.Sprintf("http://%s/unregister", nameserver),
+		url.Values{"ip": {ip}})
+}
 func (n *NodeRPC) Call(method string, args interface{}, reply interface{}) error {
-	var err error
-	err = n.c.Call(method, args, reply)
-	if err == rpc.ErrShutdown {
-		n.Mutex.Lock()
-		err = n.reDial()
-		n.Mutex.Unlock()
-		if err != nil {
-			return err
+	call := n.c.Go(method, args, reply, nil)
+	select {
+	case <-time.After(n.timeout):
+		return ErrTimeout
+	case call := <-call.Done:
+		if call.Error != nil {
+			return call.Error
 		}
-		return n.c.Call(method, args, reply)
-	} else if err != nil {
-		return err
 	}
 	return nil
 }

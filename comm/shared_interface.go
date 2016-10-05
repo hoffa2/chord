@@ -1,7 +1,5 @@
 package comm
 
-import "github.com/hoffa2/chord/comm"
-
 // NodeComm Chord RPC interface
 type NodeComm interface {
 	FindPredecessor(args *Args, reply *NodeID) error
@@ -16,5 +14,6 @@ type NodeComm interface {
 	UpdateFingerTable(args *FingerEntry, reply *Empty) error
 	ClosestPreFinger(id *string, reply *NodeID) error
 	GetKeysInInterval(ival *Interval, reply *Keys) error
-	Notify(node *comm.Rnode, reply *Empty)
+	Notify(node *Rnode, reply *Empty) error
+	Leave(in *Empty, out *Empty) error
 }
