@@ -268,16 +268,20 @@ func (n *Node) migrateKeys(from, to string) map[string]string {
 //
 func (n *Node) notify(rn *comm.Rnode) {
 	if n.prev.ID.IsEqual(n.ID) || rn.ID.IsBetween(n.prev.ID, n.ID) {
+		n.log.Info.Printf("Changing pre from %s to %s\n", n.prev.IP, rn.IP)
 		n.setPredecessor(rn)
 	}
 	if alive, _ := n.remote.IsAlive(*n.prev); !alive {
+		n.log.Info.Printf("Changing pre from %s to %s\n", n.prev.IP, rn.IP)
 		n.setPredecessor(rn)
 	}
 
 	if n.fingers[0].node.ID.IsEqual(n.ID) {
+		n.log.Info.Printf("Changing next from %s to %s\n", n.fingers[0].node.IP, rn.IP)
 		n.setSuccessor(rn)
 	}
 	if len(n.successors) == 1 && n.successors[0].ID.IsEqual(n.ID) {
+		n.log.Info.Printf("Changing next from %s to %s\n", n.fingers[0].node.IP, rn.IP)
 		n.setSuccessor(rn)
 	}
 
@@ -301,7 +305,7 @@ func (n *Node) stabilize() {
 	// check if successor has died
 	var temp *comm.Rnode
 	var err error
-
+	skipped := false
 	if n.fingers[0].node.ID.IsEqual(n.ID) {
 		return
 	}
@@ -311,10 +315,15 @@ func (n *Node) stabilize() {
 	for temp, err = n.remote.GetPredecessor(successor); ; {
 		if err != nil {
 			n.log.Err.Println(err)
+			n.log.Info.Printf("Skipping successor %s to: ", successor.IP)
 			successor, err = n.skipSuccessor(&successor)
+			skipped = true
+			n.log.Info.Printf("%s\n", successor.IP)
 			if err == ErrExhausted {
 				n.setSuccessor(n.Rnode)
 				return
+			} else if err != nil {
+				n.log.Err.Printf("Has successor %s and got err: %s\n", successor.IP, err.Error())
 			}
 		} else {
 			break
@@ -326,23 +335,27 @@ func (n *Node) stabilize() {
 
 	if temp.ID.IsBetween(n.ID, successor.ID) ||
 		n.fingers[0].node.ID.IsEqual(n.ID) {
-		n.setSuccessor(temp)
-
+		n.log.Info.Println(skipped)
+		if !skipped {
+			if alive, _ := n.remote.IsAlive(*temp); alive {
+				n.setSuccessor(temp)
+			}
+		}
 	}
 	n.remote.Notify(successor, n.Rnode)
 
 	n.checkSuccessors()
-
-	n.fixFinger()
+	if !skipped {
+		n.fixFinger()
+	}
 }
 
 func (n *Node) checkSuccessors() {
 	for i := 0; i < len(n.successors)-1; i++ {
 		s, err := n.remote.GetSuccessor(n.successors[i])
-		if err == netutils.ErrTimeout {
-			n.log.Err.Println(err)
-		} else if err != nil {
-			n.successors = append(n.successors[i:], n.successors[i+1:]...)
+		if err != nil {
+			n.successors = append(n.successors[:i], n.successors[i+1:]...)
+			return
 		} else {
 			n.successors[i+1] = *s
 		}
@@ -374,6 +387,7 @@ func (n *Node) updateSuccessors(nsucc *comm.Rnode) error {
 					n.successors = append(n.successors, comm.Rnode{})
 					copy(n.successors[i+1:], n.successors[i:])
 					n.successors[i+1] = *nsucc
+					n.log.Info.Printf("Adding new succ %s\n", nsucc.IP)
 				}
 			}
 		}
@@ -390,8 +404,9 @@ func (n *Node) skipSuccessor(s *comm.Rnode) (comm.Rnode, error) {
 	if len(n.successors) == 0 {
 		return comm.Rnode{}, ErrExhausted
 	}
-	n.log.Info.Printf("Skipping successor to %s\n", n.successors[0].IP)
+	n.log.Info.Printf("successor[0] = %s\n", n.successors[0])
 	n.fingers[0].node = &n.successors[0]
+	n.log.Info.Printf("Changing successor to %s\n", n.fingers[0].node.IP)
 	return n.successors[0], nil
 }
 
@@ -436,17 +451,14 @@ func (n *Node) createState() bytes.Buffer {
 
 func (n *Node) sendState(method string, b bytes.Buffer) {
 	url := fmt.Sprintf("http://%s/%s", n.graphIP, method)
-	n.log.Err.Println(b.String())
 	_, err := n.conn.Post(url, "application/json", &b)
 	if err != nil {
 		n.log.Err.Println(err)
 	}
-
 }
 
 func (n *Node) leave() {
 	b := n.createState()
-	n.log.Info.Println(b)
 	n.sendState("remove", b)
 }
 
