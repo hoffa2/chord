@@ -147,7 +147,8 @@ func (c *Connection) killNode(args []string) error {
 
 func (c *Connection) RunTests(args []string) error {
 	fmt.Printf(Red + "Running Test: " + White)
-	return c.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", c.nameserver))
+	return c.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", c.nameserver),
+		fmt.Sprintf("--tests=%s", args[0]))
 }
 
 func (c *Connection) leaveNode(args []string) error {

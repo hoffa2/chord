@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/hoffa2/chord/util"
 )
 
 type Client struct {
@@ -26,23 +28,32 @@ type Client struct {
 	sync.WaitGroup
 }
 
+type HTTPJob struct {
+	IP  string
+	Key string
+	Val string
+}
+
 const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const keysize = 160
 
-func (c *Client) putKey(key, val, nodeip string) error {
-	defer c.WaitGroup.Done()
+func (c *Client) putKey(args interface{}) {
+	job := args.(HTTPJob)
+	key := job.Key
+	nodeip := job.IP
+	val := job.Val
 	url := fmt.Sprintf("http://%s/%s", nodeip+":8030", key)
 	req, err := http.NewRequest("PUT", url, strings.NewReader(val))
 	if err != nil {
 		c.errors <- err
-		return nil
+		return
 	}
 	req.Close = true
 	before := time.Now()
 	resp, err := c.conn.Do(req)
 	if err != nil {
 		c.errors <- err
-		return nil
+		return
 	}
 	defer resp.Body.Close()
 	c.results <- time.Now().Sub(before)
@@ -52,23 +63,24 @@ func (c *Client) putKey(key, val, nodeip string) error {
 		c.errors <- fmt.Errorf("Unsuccesful PUT request (%s)", string(body))
 	}
 	io.Copy(ioutil.Discard, resp.Body)
-	return nil
 }
 
-func (c *Client) getKey(key, nodeip string) error {
-	defer c.WaitGroup.Done()
+func (c *Client) getKey(args interface{}) {
+	job := args.(HTTPJob)
+	key := job.Key
+	nodeip := job.IP
 	url := fmt.Sprintf("http://%s/%s", nodeip+":8030", key)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		c.errors <- err
-		return nil
+		return
 	}
 	before := time.Now()
 	req.Close = true
 	resp, err := c.conn.Do(req)
 	if err != nil {
 		c.errors <- err
-		return nil
+		return
 	}
 	defer resp.Body.Close()
 
@@ -76,7 +88,8 @@ func (c *Client) getKey(key, nodeip string) error {
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		c.errors <- err
+		return
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -85,28 +98,49 @@ func (c *Client) getKey(key, nodeip string) error {
 	if strings.Compare(string(body), c.keyvalues[key]) != 0 {
 		c.errors <- fmt.Errorf("Get returned wrong key (%s:%s)", string(body), c.keyvalues[key])
 	}
-
-	return nil
 }
 
 func (c *Client) RunTests() error {
+	fmt.Printf("Running %d tests\n", c.nkeys)
 	for i := 0; i < c.nkeys; i++ {
 		c.keyvalues[strconv.Itoa(i*100)] = strconv.Itoa(i * 100)
 	}
+	wp := util.NewPool(1000, c.putKey)
+
+	wp.Start()
 
 	start := time.Now()
 	for k, v := range c.keyvalues {
-		c.WaitGroup.Add(1)
-		go c.putKey(k, v, c.IPs[rand.Intn(len(c.IPs))])
+		job := HTTPJob{
+			IP:  c.IPs[rand.Intn(len(c.IPs))],
+			Key: k,
+			Val: v,
+		}
+		wp.Add(job)
 	}
-	c.WaitGroup.Wait()
-	for k, _ := range c.keyvalues {
-		c.WaitGroup.Add(1)
-		go c.getKey(k, c.IPs[rand.Intn(len(c.IPs))])
-	}
+	wp.Wait()
+	//for k, _ := range c.keyvalues {
+	//	go c.getKey(k, c.IPs[rand.Intn(len(c.IPs))])
+	//}
 
-	c.WaitGroup.Wait()
 	end := time.Now().Sub(start)
+	wp.Quit()
+	c.finalize(end)
+
+	wp = util.NewPool(1000, c.getKey)
+	wp.Start()
+
+	start = time.Now()
+	for k, _ := range c.keyvalues {
+		job := HTTPJob{
+			IP:  c.IPs[rand.Intn(len(c.IPs))],
+			Key: k,
+		}
+		wp.Add(job)
+	}
+	wp.Wait()
+
+	end = time.Now().Sub(start)
 	c.finalize(end)
 	c.checkErrors()
 	return nil
@@ -129,6 +163,7 @@ func (c *Client) finalize(totalTime time.Duration) {
 			times = append(times, r.Seconds())
 			avgTotal += r.Seconds()
 		default:
+			fmt.Printf("Requests: %d\n", len(times))
 			fmt.Printf("\tTotal:\t%4.4f secs\n", totalTime.Seconds())
 			avgTime := avgTotal / float64(len(times))
 			fmt.Printf("\tRequests/s\t%4.4f\n", float64(len(times))/totalTime.Seconds())

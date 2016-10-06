@@ -12,7 +12,6 @@ func (n *Node) putValue(key util.Identifier, body []byte) {
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	n.objectStore[key.ToString()] = string(body)
-	n.log.Info.Printf("Putting key %s on node %s\n", string(body), n.IP)
 	if !key.InKeySpace(n.prev.ID, n.ID) {
 		n.log.Err.Printf("Key %s is not in %s's keyspace\n", key.ToString(), n.IP)
 	}
@@ -76,7 +75,7 @@ func (n *Node) putKey(w http.ResponseWriter, r *http.Request) {
 	} else {
 		err = n.sendToSuccessor(KID.ToString(), string(body), s)
 		if err != nil {
-		n.log.Err.Printf("Could not find %s's successor\n", key)
+			n.log.Err.Printf("Could not find %s's successor\n", key)
 			// TODO: Notify the actual error in some way
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -99,10 +98,8 @@ func (n *Node) getKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if s.ID.IsEqual(n.ID) {
-		n.log.Info.Printf("Getting key %s from node %s\n", key, n.IP)
 		val, err = n.getValue(KID)
 	} else {
-		n.log.Info.Printf("Getting key (%s) from %s\n", key, n.fingers[0].node.IP)
 		val, err = n.getFromSuccessor(KID.ToString(), s)
 	}
 	if err == ErrNotFound {

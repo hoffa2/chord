@@ -54,8 +54,9 @@ type Node struct {
 	objectStore map[string]string
 	// IP Address of nameserver
 	nameServer string
-	graphIP    string
-	conn       http.Client
+	// Address if graph frontend
+	graphIP string
+	conn    http.Client
 	// FingerTable
 	fingers []FingerEntry
 	// Predecessor of node

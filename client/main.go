@@ -26,8 +26,6 @@ func Run(c *cli.Context) error {
 		keyvalues:  make(map[string]string),
 		errors:     make(chan error, tests*2),
 	}
-
-	time.Sleep(time.Second * 10)
 	ips, err := netutils.GetNodeIPs(nameServerAddr + ":" + "8030")
 	if err != nil {
 		return err

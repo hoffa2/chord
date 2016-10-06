@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -59,7 +60,9 @@ func Run(c *cli.Context) error {
 		exitChan:    make(chan string),
 		graphIP:     "129.242.22.74:8080",
 	}
-
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	http.DefaultTransport.(*http.Transport).IdleConnTimeout = time.Second * 90
+	http.DefaultTransport.(*http.Transport).MaxIdleConns = 1000
 	node.remote = netutils.NewRemote(node.failhandler)
 	l, err := netutils.SetupRPCServer("8011", node)
 	if err != nil {
@@ -91,8 +94,15 @@ func Run(c *cli.Context) error {
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 	r.HandleFunc("/state/get", node.state).Methods("GET")
 	errchan := make(chan error)
+
+	srv := &http.Server{
+		Addr:         ":" + port,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		Handler:      r,
+	}
 	go func() {
-		err := http.ListenAndServe(":"+port, r)
+		err := srv.ListenAndServe()
 		if err != nil {
 			errchan <- err
 		}
