@@ -54,6 +54,7 @@ type Connection struct {
 	freeNodes  []string
 	nameserver string
 	cwd        string
+	graph      int
 	logfile    *os.File
 }
 
@@ -107,7 +108,6 @@ func (c *Console) RunConsole() {
 		fmt.Printf(Blue + "--> " + White)
 		input, _ := in.ReadString('\n')
 		cmd := strings.Split(strings.TrimSpace(input), " ")
-
 		if len(cmd) == 0 {
 			continue
 		}
@@ -127,7 +127,11 @@ func (c *Connection) AddNode(args []string) error {
 	nodecmd := fmt.Sprintf(RunNodeCmd, c.nameserver)
 	node := c.freeNodes[len(c.freeNodes)-1]
 	c.freeNodes = c.freeNodes[:len(c.freeNodes)-1]
-	return c.runSSHCommand(node, c.cwd, nodecmd)
+	command := nodecmd
+	if c.graph != 0 {
+		command += fmt.Sprintf(" --graph=%d", c.graph)
+	}
+	return c.runSSHCommand(node, c.cwd, command)
 
 }
 
@@ -147,8 +151,12 @@ func (c *Connection) killNode(args []string) error {
 
 func (c *Connection) RunTests(args []string) error {
 	fmt.Printf(Red + "Running Test: " + White)
-	return c.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", c.nameserver),
+	if len(args) < 1 {
+		return fmt.Errorf("")
+	}
+	c.runCommand("chord", "client", fmt.Sprintf("--nameserver=%s", c.nameserver),
 		fmt.Sprintf("--tests=%s", args[0]))
+	return nil
 }
 
 func (c *Connection) leaveNode(args []string) error {
@@ -182,7 +190,7 @@ func InitConsole(conn *Connection) *Console {
 
 func Run(c *cli.Context) error {
 	nameserver := c.String("nameserver")
-
+	graph := c.Int("graph")
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -205,12 +213,13 @@ func Run(c *cli.Context) error {
 	conns.nameserver = nameserver
 	conns.cwd = cwd
 
-	nodes, err := getNodeList("52")
+	nodes, err := getNodeList("40")
 	if err != nil {
 		return err
 	}
 
 	conns.freeNodes = nodes
+	conns.graph = graph
 	cons := InitConsole(conns)
 	go cons.RunConsole()
 
@@ -264,11 +273,7 @@ func (c *Connection) runCommand(command string, args ...string) error {
 }
 
 func (c *Connection) runSSHCommand(host, cwd, command string) error {
-	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s", cwd+"/..", command))
-	//logger := log.New(c.logfile, "\x1b[32m"+host+"\x1b[0m"+" --> ", 0)
-
-	//logStreamerOut := logstreamer.NewLogstreamer(logger, " ", false)
-	//logStreamerErr := logstreamer.NewLogstreamer(logger, "stderr", false)
+	cmd := exec.Command("ssh", "-f", host, fmt.Sprintf("cd %s; %s; ulimit -n 2000", cwd+"/..", command))
 	fmt.Printf("\x1b[32m"+"Started \x1b[0m"+" --> "+" %s\n", host)
 
 	sshconn := &SSHConn{

@@ -22,6 +22,7 @@ func readKey(r *http.Request) string {
 	return vars["key"]
 }
 
+// Locates the successor of k
 func (n Node) findKeySuccessor(k util.Identifier) (*comm.Rnode, error) {
 	// I'm the successor
 	if k.InKeySpace(n.prev.ID, n.ID) {
@@ -36,6 +37,7 @@ func (n Node) findKeySuccessor(k util.Identifier) (*comm.Rnode, error) {
 	return s, nil
 }
 
+// register with nameserver
 func (n Node) registerNode() error {
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -54,6 +56,7 @@ func (n Node) registerNode() error {
 	return nil
 }
 
+// Set predecessor locked
 func (n *Node) setPredecessor(rn *comm.Rnode) error {
 	n.nMu.Lock()
 	n.prev = rn
@@ -61,6 +64,7 @@ func (n *Node) setPredecessor(rn *comm.Rnode) error {
 	return nil
 }
 
+// Set successor locked
 func (n *Node) setSuccessor(rn *comm.Rnode) error {
 	n.nMu.Lock()
 	n.fingers[0].node = rn
@@ -93,33 +97,38 @@ func JoinNetwork(n *Node, id string) error {
 		return err
 	}
 
+	defer func() {
+		if n.graph {
+			n.addNodeToGraph()
+			go n.pushState()
+		}
+	}()
+
 	if len(nodes) == 1 && nodes[0] == n.IP {
-		// I'm alone!!!
 		n.setSuccessor(n.Rnode)
 		n.setPredecessor(n.Rnode)
 		n.initFTable(true)
-		n.addNodeToGraph()
 		go n.periodicRun()
-		go n.pushState()
 		return nil
 	}
 
 	n.initFTable(false)
+
 	node := n.getRandomNode(nodes)
+
 	rnode := &comm.Rnode{IP: node}
-	n.log.Info.Println("Came here")
 	succ, err := n.remote.FindSuccessor(*rnode, n.ID)
 	if err != nil {
 		return err
 	}
+
 	n.setSuccessor(succ)
 	n.setPredecessor(n.Rnode)
 	go n.periodicRun()
-	n.addNodeToGraph()
-	go n.pushState()
 	return nil
 }
 
+// Get keys in my identifier space NOT USED
 func (n *Node) retrieveKeys() error {
 	keys, err := n.remote.GetKeysInInterval(*n.prev, n.prev.ID, n.ID)
 	if err != nil {
@@ -135,6 +144,7 @@ func (n *Node) retrieveKeys() error {
 	return nil
 }
 
+// Setting start identifier in each ft entry
 func (n *Node) initFTable(alone bool) {
 	for i := 0; i < KeySize; i++ {
 		n.fingers[i].start = n.ID.PowMod(int64(i), int64(KeySize))
@@ -144,6 +154,7 @@ func (n *Node) initFTable(alone bool) {
 	}
 }
 
+// Sending state through ssh NOT USED
 func (n *Node) reportState() {
 	for {
 		time.Sleep(time.Second * 5)
@@ -151,6 +162,7 @@ func (n *Node) reportState() {
 	}
 }
 
+// HTTP endpoint providing current node state USED IN DEBUGGING
 func (n *Node) state(w http.ResponseWriter, r *http.Request) {
 	p := &struct {
 		IP         string
@@ -205,6 +217,7 @@ func (n *Node) findPredecessor(id util.Identifier) (*comm.Rnode, error) {
 	return tnode, nil
 }
 
+// Skips a node if it has failed
 func (n *Node) skipClosestFinger(rn *comm.Rnode, id util.Identifier) *comm.Rnode {
 	var cf *comm.Rnode
 	for i, succ := range n.successors {
@@ -242,12 +255,14 @@ func (n *Node) findSuccessor(id util.Identifier) (*comm.Rnode, error) {
 func (n *Node) closestPreFinger(id util.Identifier) *comm.Rnode {
 	for i := KeySize - 1; i >= 0; i-- {
 		if n.fingers[i].node != nil && n.fingers[i].node.ID.IsBetween(n.ID, id) {
+			n.log.Info.Printf("Returning %s as closest pre\n", n.fingers[i].node.IP)
 			return n.fingers[i].node
 		}
 	}
 	return n.Rnode
 }
 
+// Generates a map in an id interval NOT USED
 func (n *Node) migrateKeys(from, to string) map[string]string {
 	n.mu.Lock()
 	defer n.mu.Unlock()
@@ -265,23 +280,19 @@ func (n *Node) migrateKeys(from, to string) map[string]string {
 	return mk
 }
 
-//
+// Implemented as per Chord
 func (n *Node) notify(rn *comm.Rnode) {
 	if n.prev.ID.IsEqual(n.ID) || rn.ID.IsBetween(n.prev.ID, n.ID) {
-		n.log.Info.Printf("Changing pre from %s to %s\n", n.prev.IP, rn.IP)
 		n.setPredecessor(rn)
 	}
 	if alive, _ := n.remote.IsAlive(*n.prev); !alive {
-		n.log.Info.Printf("Changing pre from %s to %s\n", n.prev.IP, rn.IP)
 		n.setPredecessor(rn)
 	}
 
 	if n.fingers[0].node.ID.IsEqual(n.ID) {
-		n.log.Info.Printf("Changing next from %s to %s\n", n.fingers[0].node.IP, rn.IP)
 		n.setSuccessor(rn)
 	}
 	if len(n.successors) == 1 && n.successors[0].ID.IsEqual(n.ID) {
-		n.log.Info.Printf("Changing next from %s to %s\n", n.fingers[0].node.IP, rn.IP)
 		n.setSuccessor(rn)
 	}
 
@@ -314,8 +325,6 @@ func (n *Node) stabilize() {
 	// Try to query the first successor - skip the next on failure
 	for temp, err = n.remote.GetPredecessor(successor); ; {
 		if err != nil {
-			n.log.Err.Println(err)
-			n.log.Info.Printf("Skipping successor %s to: ", successor.IP)
 			successor, err = n.skipSuccessor(&successor)
 			skipped = true
 			n.log.Info.Printf("%s\n", successor.IP)
@@ -333,23 +342,28 @@ func (n *Node) stabilize() {
 		return
 	}
 
+	// Setting new successor if it's in the node's successor's keyspace
 	if temp.ID.IsBetween(n.ID, successor.ID) ||
 		n.fingers[0].node.ID.IsEqual(n.ID) {
 		n.log.Info.Println(skipped)
 		if !skipped {
+			// Safeguard: checks for aliveness
 			if alive, _ := n.remote.IsAlive(*temp); alive {
 				n.setSuccessor(temp)
 			}
 		}
 	}
+
 	n.remote.Notify(successor, n.Rnode)
 
 	n.checkSuccessors()
+
 	if !skipped {
 		n.fixFinger()
 	}
 }
 
+// Maintains the successor list according to aliveness
 func (n *Node) checkSuccessors() {
 	for i := 0; i < len(n.successors)-1; i++ {
 		s, err := n.remote.GetSuccessor(n.successors[i])
@@ -387,7 +401,6 @@ func (n *Node) updateSuccessors(nsucc *comm.Rnode) error {
 					n.successors = append(n.successors, comm.Rnode{})
 					copy(n.successors[i+1:], n.successors[i:])
 					n.successors[i+1] = *nsucc
-					n.log.Info.Printf("Adding new succ %s\n", nsucc.IP)
 				}
 			}
 		}
@@ -404,9 +417,7 @@ func (n *Node) skipSuccessor(s *comm.Rnode) (comm.Rnode, error) {
 	if len(n.successors) == 0 {
 		return comm.Rnode{}, ErrExhausted
 	}
-	n.log.Info.Printf("successor[0] = %s\n", n.successors[0])
 	n.fingers[0].node = &n.successors[0]
-	n.log.Info.Printf("Changing successor to %s\n", n.fingers[0].node.IP)
 	return n.successors[0], nil
 }
 
@@ -415,6 +426,7 @@ func (n *Node) failhandler(rn *comm.Rnode) {
 
 }
 
+// runs the stabilize routine periodically
 func (n *Node) periodicRun() {
 	for {
 		time.Sleep(time.Second * 1)
@@ -422,15 +434,17 @@ func (n *Node) periodicRun() {
 	}
 }
 
+// Pushing state to the js frontend
 func (n *Node) pushState() {
 
 	for {
 		b := n.createState()
 		n.sendState("update", b)
-		time.Sleep(time.Millisecond * 300)
+		time.Sleep(time.Millisecond * 1000)
 	}
 }
 
+// marshals a node's state to json
 func (n *Node) createState() bytes.Buffer {
 	state := &struct {
 		Next string
@@ -449,6 +463,7 @@ func (n *Node) createState() bytes.Buffer {
 	return *b
 }
 
+// send state to the js frontend
 func (n *Node) sendState(method string, b bytes.Buffer) {
 	url := fmt.Sprintf("http://%s/%s", n.graphIP, method)
 	_, err := n.conn.Post(url, "application/json", &b)
@@ -457,11 +472,13 @@ func (n *Node) sendState(method string, b bytes.Buffer) {
 	}
 }
 
+// Tells the js frontend that node is leaving
 func (n *Node) leave() {
 	b := n.createState()
 	n.sendState("remove", b)
 }
 
+// Tell the js frontend that node has jode
 func (n *Node) addNodeToGraph() {
 	b := n.createState()
 	n.sendState("add", b)

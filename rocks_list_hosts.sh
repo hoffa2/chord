@@ -5,7 +5,7 @@
 num_hosts=$1
 
 rocks list host \
-    | grep compute \
+    | grep compute-2-* \
     | cut -d" " -f1 \
     | sed 's/.$//' \
     | shuf \

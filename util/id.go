@@ -100,7 +100,7 @@ func Mod(id1, id2 Identifier) Identifier {
 
 func (id Identifier) PowMod(k, m int64) Identifier {
 	msquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(m), nil)
-	ksquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(k-1), nil)
+	ksquared := new(big.Int).Exp(big.NewInt(2), big.NewInt(k), nil)
 	left := new(big.Int).Add(big.NewInt(0).SetBytes(id), ksquared)
 	start := new(big.Int).Mod(left, msquared)
 	return start.Bytes()

@@ -69,4 +69,6 @@ type Node struct {
 	successors []comm.Rnode
 	// Logger
 	log *Logger
+	//
+	graph bool
 }

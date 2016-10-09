@@ -42,6 +42,7 @@ func Run(c *cli.Context) error {
 	return http.ListenAndServe(":"+port, r)
 }
 
+// Post request to register a node with the namserver
 func (n *NameServer) registerNode(w http.ResponseWriter, r *http.Request) {
 	ip := r.PostFormValue("ip")
 	if len(ip) == 0 {
@@ -55,6 +56,7 @@ func (n *NameServer) registerNode(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Called when a node leaves the ring
 func (n *NameServer) unRegister(w http.ResponseWriter, r *http.Request) {
 	ip := r.PostFormValue("ip")
 	if len(ip) == 0 {

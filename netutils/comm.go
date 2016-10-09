@@ -5,16 +5,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/rpc"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/hoffa2/chord/comm"
 )
 
+// NodeRPC
 type NodeRPC struct {
 	sync.Mutex
 	host    string
@@ -37,7 +40,7 @@ func registerCommAPI(server *rpc.Server, comm comm.NodeComm) {
 
 // ConnectRPC Instantiates a RPC connections
 func ConnectRPC(host string) (*NodeRPC, error) {
-	conn, err := net.Dial("tcp", host+PORT)
+	conn, err := net.Dial("tcp4", host+PORT)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +70,6 @@ func SetupRPCServer(port string, api comm.NodeComm) (net.Listener, error) {
 	s := rpc.NewServer()
 
 	registerCommAPI(s, api)
-
 	// the start means that we'll listen to
 	// all traffic; Not just localhost
 	l, err := net.Listen("tcp4", ":"+port)
@@ -103,10 +105,37 @@ func GetNodeIPs(address string) ([]string, error) {
 	return list, nil
 }
 
+func GetNodeIPsPython(address string) ([]string, error) {
+	var list []string
+	c := http.Client{Timeout: time.Duration(time.Second * 2)}
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/", address), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("could not retrieve ipadresses from nameserver: %s", address)
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	list = strings.Split(string(body), "\n")
+	fmt.Println(list)
+	return list, nil
+}
+
 func UnRegister(ip, nameserver string) {
 	http.PostForm(fmt.Sprintf("http://%s/unregister", nameserver),
 		url.Values{"ip": {ip}})
 }
+
 func (n *NodeRPC) Call(method string, args interface{}, reply interface{}) error {
 	call := n.c.Go(method, args, reply, nil)
 	select {

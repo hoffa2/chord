@@ -30,6 +30,7 @@ func Run(c *cli.Context) error {
 	}
 
 	NameServerAddr := c.String("nameserver")
+	graph := c.Int("graph")
 
 	r := mux.NewRouter()
 	n, err := os.Hostname()
@@ -37,6 +38,11 @@ func Run(c *cli.Context) error {
 		return err
 	}
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	http.DefaultTransport.(*http.Transport).IdleConnTimeout = time.Second * 2
+	http.DefaultTransport.(*http.Transport).MaxIdleConns = 10000
+
+	// CTRL-C HANDLER
 	ch := make(chan os.Signal, 2)
 	signal.Notify(ch, os.Interrupt, syscall.SIGKILL)
 	signal.Notify(ch, os.Interrupt, syscall.SIGINT)
@@ -59,16 +65,18 @@ func Run(c *cli.Context) error {
 		log:         &Logger{Err: errlog, Info: infolog},
 		exitChan:    make(chan string),
 		graphIP:     "129.242.22.74:8080",
+		graph:       graph != 0,
 	}
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	http.DefaultTransport.(*http.Transport).IdleConnTimeout = time.Second * 90
-	http.DefaultTransport.(*http.Transport).MaxIdleConns = 1000
+
 	node.remote = netutils.NewRemote(node.failhandler)
 	l, err := netutils.SetupRPCServer("8011", node)
 	if err != nil {
 		return err
 	}
+
 	defer l.Close()
+
+	// CTRL-C
 	go func() {
 		<-ch
 		l.Close()
@@ -84,15 +92,19 @@ func Run(c *cli.Context) error {
 		l.Close()
 		os.Exit(1)
 	}()
+
 	err = JoinNetwork(node, n)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
+
 	// Registering the put and get methods
 	r.HandleFunc("/{key}", node.getKey).Methods("GET")
 	r.HandleFunc("/{key}", node.putKey).Methods("PUT")
 	r.HandleFunc("/state/get", node.state).Methods("GET")
+
+	// Used in sending errors from httplisten
 	errchan := make(chan error)
 
 	srv := &http.Server{
@@ -112,6 +124,7 @@ func Run(c *cli.Context) error {
 	case err := <-errchan:
 		l.Close()
 		return err
+	// Used to make a node leave the network
 	case <-node.exitChan:
 		node.leave()
 		l.Close()
@@ -120,5 +133,6 @@ func Run(c *cli.Context) error {
 		os.Exit(0)
 
 	}
+	// Assertion
 	panic("Reached end")
 }

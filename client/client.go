@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"math/rand"
 	"net/http"
-	"strconv"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -16,11 +17,12 @@ import (
 
 type Client struct {
 	// IP addresses to chord nodes
-	IPs []string
+	IPs     []string
+	workers int
 	// Ip address of nameserver
 	nameServer string
 	// Connection object - used for all http interaction
-	conn      http.Client
+	conn      *http.Client
 	results   chan time.Duration
 	keyvalues map[string]string
 	nkeys     int
@@ -100,12 +102,10 @@ func (c *Client) getKey(args interface{}) {
 	}
 }
 
-func (c *Client) RunTests() error {
+func (c *Client) RunTests(workers int) error {
 	fmt.Printf("Running %d tests\n", c.nkeys)
-	for i := 0; i < c.nkeys; i++ {
-		c.keyvalues[strconv.Itoa(i*100)] = strconv.Itoa(i * 100)
-	}
-	wp := util.NewPool(1000, c.putKey)
+
+	wp := util.NewPool(workers, c.putKey)
 
 	wp.Start()
 
@@ -119,29 +119,27 @@ func (c *Client) RunTests() error {
 		wp.Add(job)
 	}
 	wp.Wait()
-	//for k, _ := range c.keyvalues {
-	//	go c.getKey(k, c.IPs[rand.Intn(len(c.IPs))])
-	//}
 
 	end := time.Now().Sub(start)
 	wp.Quit()
 	c.finalize(end)
 
-	wp = util.NewPool(1000, c.getKey)
-	wp.Start()
+	/*
+		wp := util.NewPool(workers, c.getKey)
+		wp.Start()
 
-	start = time.Now()
-	for k, _ := range c.keyvalues {
-		job := HTTPJob{
-			IP:  c.IPs[rand.Intn(len(c.IPs))],
-			Key: k,
+		start = time.Now()
+		for k, _ := range c.keyvalues {
+			job := HTTPJob{
+				IP:  c.IPs[rand.Intn(len(c.IPs))],
+				Key: k,
+			}
+			wp.Add(job)
 		}
-		wp.Add(job)
-	}
-	wp.Wait()
-
-	end = time.Now().Sub(start)
-	c.finalize(end)
+		wp.Wait()
+		end = time.Now().Sub(start)
+		c.finalize(end)
+	*/
 	c.checkErrors()
 	return nil
 }
@@ -154,9 +152,28 @@ func RandStringBytes(n int) string {
 	return string(b)
 }
 
+func calculateSD(mean float64, times []float64) float64 {
+	var pow float64
+	for _, val := range times {
+		pow += math.Pow((val - mean), 2)
+	}
+	return math.Sqrt((pow / float64(len(times))))
+}
+func calculateConfidence(sd, avgTime float64, N int) float64 {
+	StdM := sd / math.Sqrt(float64(N))
+	low := avgTime - (1.96 * StdM)
+	high := avgTime + (1.96 * StdM)
+	return high - low
+}
+
 func (c *Client) finalize(totalTime time.Duration) {
 	var times []float64
 	var avgTotal float64
+	f, err := os.OpenFile("results3.out", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		fmt.Printf("error opening file: %v", err)
+	}
+	defer f.Close()
 	for {
 		select {
 		case r := <-c.results:
@@ -168,6 +185,9 @@ func (c *Client) finalize(totalTime time.Duration) {
 			avgTime := avgTotal / float64(len(times))
 			fmt.Printf("\tRequests/s\t%4.4f\n", float64(len(times))/totalTime.Seconds())
 			fmt.Printf("\tMeanLatenct:\t%4.4f\n", avgTime)
+			sd := calculateSD(avgTime, times)
+			fmt.Fprintf(f, "%d\t%d\t%4.4f\t%4.4f\t%f\n", len(c.IPs), c.workers,
+				float64(len(times))/totalTime.Seconds(), avgTime, calculateConfidence(sd, avgTime, len(times)))
 			return
 		}
 	}

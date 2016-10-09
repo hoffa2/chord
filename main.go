@@ -44,6 +44,10 @@ func main() {
 					Name:  "id",
 					Usage: "optional id",
 				},
+				cli.IntFlag{
+					Name:  "graph",
+					Usage: "graph on or of (1/0)",
+				},
 			},
 		},
 		{
@@ -63,6 +67,10 @@ func main() {
 				cli.IntFlag{
 					Name:  "tests",
 					Usage: "Number of queries issued",
+				},
+				cli.IntFlag{
+					Name:  "threads",
+					Usage: "Number of concurrent requests",
 				},
 			},
 		},
@@ -87,6 +95,10 @@ func main() {
 				cli.StringFlag{
 					Name:  "hosts",
 					Usage: "number of hosts to run",
+				},
+				cli.IntFlag{
+					Name:  "graph",
+					Usage: "0/1",
 				},
 			},
 		},
